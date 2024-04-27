@@ -5,9 +5,10 @@ import { AuthContext } from "./context/auth/AuthContext";
 const ProtectedRoute = ({ component: Component, ...rest }) => {
     const { isAuthenticated } = useContext(AuthContext);
     console.log(isAuthenticated);
+
     return (
         <>
-            {(isAuthenticated || localStorage.getItem("token")) ? (
+            {isAuthenticated || localStorage.getItem("accessToken") ? (
                 <Component {...rest} />
             ) : (
                 <Navigate to="/login" />

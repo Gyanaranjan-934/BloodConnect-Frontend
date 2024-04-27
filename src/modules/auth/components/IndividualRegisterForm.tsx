@@ -1,16 +1,31 @@
 import React, { ReactElement, useState } from "react";
-import { firebaseApp } from "../../services/firebase";
+import { firebaseApp } from "../../../services/firebase";
 import {
     createUserWithEmailAndPassword,
     getAuth,
     sendEmailVerification,
 } from "firebase/auth";
-import { Checkbox, Typography } from "@material-tailwind/react";
-import eyeClosed from "../../assets/eye-close-svgrepo-com.svg";
-import eyeOpended from "../../assets/eye-open-svgrepo-com.svg";
+import {
+    Button,
+    Checkbox,
+    Input,
+    Option,
+    Select,
+    Step,
+    Stepper,
+    Typography,
+} from "@material-tailwind/react";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../../context/auth/AuthContext";
+import { AuthContext } from "../../../context/auth/AuthContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faCheckCircle,
+    faEye,
+    faEyeSlash,
+    faInfoCircle,
+    faTimesCircle,
+} from "@fortawesome/free-solid-svg-icons";
 export const RegistrationFormComponent = (): ReactElement => {
     const [userDetails, setUserDetails] = useState({
         name: "",
@@ -33,23 +48,18 @@ export const RegistrationFormComponent = (): ReactElement => {
         },
     });
     const [userDOB, setUserDOB] = useState<string>();
-    const [presentStateDropdownOpen, setPresentDropdownOpen] =
-        useState<boolean>(false);
-    const [permanentStateDropdownOpen, setPermanentDropdownOpen] =
-        useState<boolean>(false);
-    const [bloodGroupDropdownOpen, setBloodGroupDropdownOpen] =
-        useState<boolean>(false);
-    const [presentState, setPresentState] = useState<string>("");
-    const [permanentState, setPermanentState] = useState<string>("");
     const [bloodGroup, setBloodGroup] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [passwordStrength, setPasswordStrength] = useState<string>("weak");
+    const [passwordStrength, setPasswordStrength] = useState<string>(
+        "Use at least 8 characters, one uppercase, one lowercase, one special character and one number."
+    );
     const [passwordMatch, setPasswordMatch] = useState<boolean>(false);
     const [avatar, setAvatar] = useState<File | null>(null);
-    const [phoneError, setPhoneError] = useState<string>("");
-    const [adhaarError, setAdhaarError] = useState<string>("");
+    const [phoneError, setPhoneError] = useState<boolean>(true); 
+    const [adhaarError, setAdhaarError] = useState<boolean>(true);
     const [isAddressSame, setSameAddress] = useState<boolean>(false);
-    const {registerIndividual,setLoadingValue} = React.useContext(AuthContext);
+    const { registerIndividual, setLoadingValue } =
+        React.useContext(AuthContext);
 
     const statesOfIndia = [
         "Andhra Pradesh",
@@ -95,13 +105,13 @@ export const RegistrationFormComponent = (): ReactElement => {
                 password
             );
         if (password.length === 0) {
-            setPasswordStrength("weak");
+            setPasswordStrength("You have entered an empty password");
         } else if (!isStrongPassword) {
             setPasswordStrength(
-                "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+                "Use at least 8 characters, one uppercase, one lowercase, one special character and one number."
             );
         } else {
-            setPasswordStrength("Strong");
+            setPasswordStrength("Strong Password");
         }
     };
     const formHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,10 +140,10 @@ export const RegistrationFormComponent = (): ReactElement => {
             const isValidNumber = /^\d{10}$/g.test(value);
             if (!isValidNumber) {
                 setPhoneError(
-                    "Phone number should be 10 digits and contain only numeric values."
+                    true
                 );
             } else {
-                setPhoneError("");
+                setPhoneError(false);
             }
         }
 
@@ -141,10 +151,10 @@ export const RegistrationFormComponent = (): ReactElement => {
             const isValidNumber = /^\d{12}$/g.test(value);
             if (!isValidNumber) {
                 setAdhaarError(
-                    "Adhaar number should be 12 digits and contain only numeric values."
+                    true
                 );
             } else {
-                setAdhaarError("");
+                setAdhaarError(false);
             }
         }
     };
@@ -160,10 +170,10 @@ export const RegistrationFormComponent = (): ReactElement => {
                         city: userDetails.presentAddress.city,
                         state: userDetails.presentAddress.state,
                         pincode: userDetails.presentAddress.pincode,
-                    }
+                    },
                 });
             }
-            
+            // await registerIndividual({...userDetails,userDOB,avatar,bloodGroup});
             const auth = getAuth(firebaseApp);
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
@@ -181,19 +191,31 @@ export const RegistrationFormComponent = (): ReactElement => {
                     }
                 );
                 setLoadingValue(70);
-                await registerIndividual({...userDetails,userDOB,avatar,bloodGroup});    
+                await registerIndividual({
+                    ...userDetails,
+                    userDOB,
+                    avatar,
+                    bloodGroup,
+                });
                 setLoadingValue(100);
                 <Navigate to={"/login"} />;
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
+        } finally {
+            setLoadingValue(0);
         }
     };
-
+    const [activeStep, setActiveStep] = React.useState(0);
+    const [isLastStep, setIsLastStep] = React.useState(false);
+    const [isFirstStep, setIsFirstStep] = React.useState(false);
+    const handleNext = () => !isLastStep && setActiveStep((cur) => cur + 1);
+    const handlePrev = () => !isFirstStep && setActiveStep((cur) => cur - 1);
     return (
         <>
-            <div className="mx-auto w-full bg-white">
+            {/* <div className="p-4 w-full bg-white">
                 <form onSubmit={handleSubmit}>
                     <div className="-mx-3 flex flex-wrap">
                         <div className="w-full px-3 sm:w-1/2">
@@ -348,7 +370,6 @@ export const RegistrationFormComponent = (): ReactElement => {
                                     }
                                     className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md cursor-pointer"
                                 />
-                                {/* Dropdown */}
                                 {bloodGroupDropdownOpen && (
                                     <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10">
                                         {bloodGroups.map((group) => (
@@ -511,9 +532,7 @@ export const RegistrationFormComponent = (): ReactElement => {
                                         type="text"
                                         name="presentCity"
                                         id="presentCity"
-                                        value={
-                                            userDetails.presentAddress.city
-                                        }
+                                        value={userDetails.presentAddress.city}
                                         onChange={(event) => {
                                             setUserDetails({
                                                 ...userDetails,
@@ -612,12 +631,20 @@ export const RegistrationFormComponent = (): ReactElement => {
                                 setSameAddress(!isAddressSame);
                             }}
                         >
-                            <Checkbox readOnly checked={isAddressSame} />
-                            <Typography>
+                            <Checkbox
+                                label="Is permanent address is same as present"
+                                readOnly
+                                checked={isAddressSame}
+                                crossOrigin={undefined}
+                                onChange={(e) => setSameAddress(!isAddressSame)}
+                            />
+                            <Typography placeholder={""}>
                                 Is permanent address is same as present
                             </Typography>
                         </div>
-                        <Typography>Permanent Address</Typography>
+                        <Typography placeholder={""}>
+                            Permanent Address
+                        </Typography>
                         <div className=" -mx-3 flex flex-wrap">
                             <div className="w-full px-3 sm:w-1/4">
                                 <div className="mb-5">
@@ -724,11 +751,10 @@ export const RegistrationFormComponent = (): ReactElement => {
                                                         );
                                                         setUserDetails({
                                                             ...userDetails,
-                                                            permanentAddress:
-                                                                {
-                                                                    ...userDetails.permanentAddress,
-                                                                    state: state,
-                                                                },
+                                                            permanentAddress: {
+                                                                ...userDetails.permanentAddress,
+                                                                state: state,
+                                                            },
                                                         });
                                                         setPermanentDropdownOpen(
                                                             false
@@ -782,6 +808,479 @@ export const RegistrationFormComponent = (): ReactElement => {
                         <button className="hover:shadow-form w-auto self-center rounded-md bg-red-500 py-3 px-8 text-center text-base font-semibold text-white outline-none">
                             Register
                         </button>
+                    </div>
+                </form>
+            </div> */}
+
+            <div className="w-full py-4 px-8 flex flex-col gap-y-10">
+                <form onSubmit={handleSubmit}>
+                    {/* First Page includes Full Name, Email, Phone Number, Password, Confirm Password */}
+                    {activeStep === 0 && (
+                        <div className="flex flex-col justify-center gap-4">
+                            <Input
+                                crossOrigin={"origin"}
+                                label="Full Name"
+                                placeholder="Full Name"
+                                value={userDetails.name}
+                                name="fullName"
+                                required
+                                onChange={(e) =>
+                                    setUserDetails({
+                                        ...userDetails,
+                                        name: e.target.value,
+                                    })
+                                }
+                            />
+                            <Input
+                                crossOrigin={"origin"}
+                                label="Email Address"
+                                placeholder="Enter your email"
+                                name="email"
+                                value={userDetails.email}
+                                required
+                                onChange={(e) =>
+                                    setUserDetails({
+                                        ...userDetails,
+                                        email: e.target.value,
+                                    })
+                                }
+                            />
+                            <div>
+                            <Input
+                                crossOrigin={"origin"}
+                                label="Phone Number"
+                                placeholder="Enter your phone number"
+                                name="phone"
+                                value={userDetails.phone}
+                                required
+                                onChange={formHandler}
+                            />
+                            <Typography
+                                    placeholder={""}
+                                    variant="small"
+                                    className={`mt-2 flex items-center gap-1 font-normal ${
+                                        phoneError
+                                            ? "text-red-500"
+                                            : "text-green-500"
+                                    }`}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={
+                                            !phoneError
+                                                ? faCheckCircle
+                                                : faTimesCircle
+                                        }
+                                    />
+                                    {phoneError
+                                        ? "Please enter a valid phone number of 10 digits"
+                                        : "Valid phone number"}
+                                </Typography>
+                            </div>
+                            <div>
+                                <Input
+                                    name="password"
+                                    crossOrigin={"origin"}
+                                    label="Password"
+                                    placeholder="Enter your password"
+                                    value={userDetails.password}
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    onChange={formHandler}
+                                    icon={
+                                        <FontAwesomeIcon
+                                            onClick={() =>
+                                                setShowPassword(!showPassword)
+                                            }
+                                            icon={
+                                                showPassword
+                                                    ? faEye
+                                                    : faEyeSlash
+                                            }
+                                        />
+                                    }
+                                />
+                                <Typography
+                                    placeholder={""}
+                                    variant="small"
+                                    className={`mt-2 flex items-center gap-1 font-normal ${passwordStrength === "You have entered an empty password" ? "text-red-500" : passwordStrength === "Strong Password" ? "text-green-500" : "text-gray-500"}`}
+                                >
+                                    <FontAwesomeIcon icon={faInfoCircle} />
+                                    {passwordStrength}
+                                </Typography>
+                            </div>
+                            <div>
+                                <Input
+                                    crossOrigin={"origin"}
+                                    label="Confirm Password"
+                                    placeholder="Enter your password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    value={userDetails.confirmPassword}
+                                    required
+                                    onChange={formHandler}
+                                    icon={
+                                        <FontAwesomeIcon
+                                            onClick={() =>
+                                                setShowPassword(!showPassword)
+                                            }
+                                            icon={
+                                                showPassword
+                                                    ? faEye
+                                                    : faEyeSlash
+                                            }
+                                        />
+                                    }
+                                />
+                                <Typography
+                                    placeholder={""}
+                                    variant="small"
+                                    className={`mt-2 flex items-center gap-1 font-normal ${
+                                        !passwordMatch
+                                            ? "text-red-500"
+                                            : "text-green-500"
+                                    }`}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={
+                                            passwordMatch
+                                                ? faCheckCircle
+                                                : faTimesCircle
+                                        }
+                                    />
+                                    {passwordMatch
+                                        ? "Password Matched"
+                                        : "Password not matching"}
+                                </Typography>
+                            </div>
+                        </div>
+                    )}
+                    {/* Second Page includes Adhaar No., Date of Birth, Blood Group, Profile Pic */}
+                    {activeStep === 1 && (
+                        <div className="flex flex-col justify-center gap-4">
+                            <Input
+                                crossOrigin={"origin"}
+                                label="Date of Birth"
+                                type="date"
+                                required
+                                placeholder="Enter your date of birth"
+                                value={userDOB}
+                                onChange={(e) => {
+                                    setUserDOB(e.target.value);
+                                }}
+                            />
+                            <div>
+                                <Input
+                                    required
+                                    crossOrigin={"origin"}
+                                    label="Adhaar No."
+                                    placeholder="Adhaar No."
+                                    name="adhaar"
+                                    value={userDetails.adhaar}
+                                    onChange={formHandler}
+                                />
+                                <Typography
+                                    placeholder={""}
+                                    variant="small"
+                                    className={`mt-2 flex items-center gap-1 font-normal ${
+                                        adhaarError
+                                            ? "text-red-500"
+                                            : "text-green-500"
+                                    }`}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={
+                                            !adhaarError
+                                                ? faCheckCircle
+                                                : faTimesCircle
+                                        }
+                                    />
+                                    {adhaarError
+                                        ? "Please enter a valid Adhaar No."
+                                        : "Valid Adhaar No."}
+                                </Typography>
+                            </div>
+                            <Select
+                                label="Choose Blood Group"
+                                placeholder="Blood Group"
+                                value={bloodGroup}
+                                
+                            >
+                                {bloodGroups.map((group) => (
+                                    <Option
+                                        key={group}
+                                        value={group}
+                                        onClick={() => {
+                                            setBloodGroup(group);
+                                        }}
+                                    >
+                                        {group}
+                                    </Option>
+                                ))}
+                            </Select>
+                            <Input
+                                required
+                                crossOrigin={"origin"}
+                                label="Profile Pic"
+                                placeholder="Profile Pic"
+                                type="file"
+                                accept="image/*"
+                                onChange={(event) => {
+                                    if (
+                                        event.target.files &&
+                                        event.target.files[0]
+                                    ) {
+                                        setAvatar(event.target.files[0]);
+                                    }
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {activeStep === 2 && (
+                        <div className="flex flex-col justify-center gap-4 p-4">
+                            {/* Address */}
+                            <div className="">
+                                <Typography
+                                    type="h2"
+                                    className="font-semibold text-lg"
+                                    placeholder={""}
+                                >
+                                    Present Address
+                                </Typography>
+                                <div className="flex flex-col gap-4">
+                                    <Input
+                                        crossOrigin={"origin"}
+                                        label="Street No."
+                                        placeholder="Street No."
+                                        value={
+                                            userDetails.presentAddress.street
+                                        }
+                                        required
+                                        onChange={(event) => {
+                                            setUserDetails({
+                                                ...userDetails,
+                                                presentAddress: {
+                                                    ...userDetails.presentAddress,
+                                                    street: event.target.value,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                    <Input
+                                        crossOrigin={"origin"}
+                                        label="City"
+                                        placeholder="City"
+                                        value={userDetails.presentAddress.city}
+                                        required
+                                        onChange={(event) => {
+                                            setUserDetails({
+                                                ...userDetails,
+                                                presentAddress: {
+                                                    ...userDetails.presentAddress,
+                                                    city: event.target.value,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                    <Select
+                                        label="Choose State"
+                                        placeholder="State"
+                                        value={userDetails.presentAddress.state}
+                                    >
+                                        {statesOfIndia.map((group) => (
+                                            <Option
+                                                key={group}
+                                                value={group}
+                                                onClick={() => {
+                                                    setUserDetails({
+                                                        ...userDetails,
+                                                        presentAddress: {
+                                                            ...userDetails.presentAddress,
+                                                            state: group,
+                                                        },
+                                                    });
+                                                }}
+                                            >
+                                                {group}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                    <Input
+                                        crossOrigin={"origin"}
+                                        label="PIN Code"
+                                        placeholder="PIN Code"
+                                        value={
+                                            userDetails.presentAddress.pincode
+                                        }
+                                        required
+                                        onChange={(event) => {
+                                            setUserDetails({
+                                                ...userDetails,
+                                                presentAddress: {
+                                                    ...userDetails.presentAddress,
+                                                    pincode: event.target.value,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="">
+                                <Typography
+                                    type="h2"
+                                    className="font-semibold text-lg"
+                                    placeholder={""}
+                                >
+                                    Permanent Address
+                                </Typography>
+                                <Checkbox
+                                    label="Is permanent address is same as present"
+                                    readOnly
+                                    checked={isAddressSame}
+                                    crossOrigin={undefined}
+                                    onChange={() =>
+                                        setSameAddress(!isAddressSame)
+                                    }
+                                />
+                                <div className="flex flex-col gap-4">
+                                    <Input
+                                        crossOrigin={"origin"}
+                                        label="Street No."
+                                        placeholder="Street No."
+                                        value={
+                                            userDetails.permanentAddress.street
+                                        }
+                                        disabled={isAddressSame}
+                                        onChange={(event) => {
+                                            setUserDetails({
+                                                ...userDetails,
+                                                permanentAddress: {
+                                                    ...userDetails.permanentAddress,
+                                                    street: event.target.value,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                    <Input
+                                        crossOrigin={"origin"}
+                                        label="City"
+                                        placeholder="City"
+                                        value={
+                                            userDetails.permanentAddress.city
+                                        }
+                                        disabled={isAddressSame}
+                                        onChange={(event) => {
+                                            setUserDetails({
+                                                ...userDetails,
+                                                permanentAddress: {
+                                                    ...userDetails.permanentAddress,
+                                                    city: event.target.value,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                    <Select
+                                        disabled={isAddressSame}
+                                        label="Choose State"
+                                        placeholder="State"
+                                        value={isAddressSame? userDetails.presentAddress.state: userDetails.permanentAddress.state}
+                                    >
+                                        {statesOfIndia.map((group) => (
+                                            <Option
+                                                key={group}
+                                                value={group}
+                                                onClick={() => {
+                                                    setUserDetails({
+                                                        ...userDetails,
+                                                        permanentAddress: {
+                                                            ...userDetails.permanentAddress,
+                                                            state: group,
+                                                        },
+                                                    });
+                                                }}
+                                            >
+                                                {group}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                    <Input
+                                        crossOrigin={"origin"}
+                                        label="PIN Code"
+                                        placeholder="PIN Code"
+                                        value={
+                                            userDetails.permanentAddress.pincode
+                                        }
+                                        disabled={isAddressSame}
+                                        onChange={(event) => {
+                                            setUserDetails({
+                                                ...userDetails,
+                                                permanentAddress: {
+                                                    ...userDetails.permanentAddress,
+                                                    pincode: event.target.value,
+                                                },
+                                            });
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="mt-8">
+                        <Stepper
+                            activeStep={activeStep}
+                            isLastStep={(value) => setIsLastStep(value)}
+                            isFirstStep={(value) => setIsFirstStep(value)}
+                            placeholder={""}
+                        >
+                            <Step
+                                onClick={() => setActiveStep(0)}
+                                placeholder={""}
+                                className="cursor-pointer"
+                            >
+                                1
+                            </Step>
+                            <Step
+                                onClick={() => setActiveStep(1)}
+                                placeholder={""}
+                                className="cursor-pointer"
+                            >
+                                2
+                            </Step>
+                            <Step
+                                onClick={() => setActiveStep(2)}
+                                placeholder={""}
+                                className="cursor-pointer"
+                            >
+                                3
+                            </Step>
+                        </Stepper>
+                        <div className="mt-16 flex justify-between">
+                            <Button
+                                onClick={handlePrev}
+                                disabled={isFirstStep}
+                                placeholder={""}
+                            >
+                                Prev
+                            </Button>
+                            {activeStep !== 2 ? (
+                                <Button
+                                    onClick={handleNext}
+                                    disabled={isLastStep}
+                                    placeholder={""}
+                                >
+                                    Next
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={handleNext}
+                                    type="submit"
+                                    disabled={!isLastStep}
+                                    placeholder={""}
+                                >
+                                    Submit
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </form>
             </div>

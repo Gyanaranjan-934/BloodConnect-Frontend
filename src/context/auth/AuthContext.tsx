@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getToken } from "firebase/messaging";
 import React, {
@@ -8,6 +9,7 @@ import React, {
     SetStateAction,
 } from "react";
 import { messaging } from "../../services/firebase";
+import usePersistState from "./usePersistState";
 import axios from "axios";
 
 interface AuthContextType {
@@ -20,10 +22,20 @@ interface AuthContextType {
     loadingValue: number;
     setLoadingValue: Dispatch<SetStateAction<number>>;
     registerIndividual: (data: any) => Promise<void>;
-    geoLocation: any;
+    geoLocation: {
+        latitude: number;
+        longitude: number;
+    };
     setGeoLocation: Dispatch<SetStateAction<any>>;
     registerOrganization: (data: any) => Promise<void>;
     registerDoctor: (data: any) => Promise<void>;
+    loginUser: (
+        data: any,
+        type: "individual" | "organization" | "doctor" | "admin"
+    ) => Promise<boolean>;
+    loggedInUser: any;
+    setLoggedInUser: Dispatch<SetStateAction<any>>;
+    loggedInUserType: "individual" | "organization" | "doctor" | "admin";
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -37,33 +49,43 @@ export const AuthContext = createContext<AuthContextType>({
     setLoadingValue: () => {},
     registerIndividual: async (data: any): Promise<void> => {},
     geoLocation: {
-        latitude: 0,
-        longitude: 0,
+        latitude: navigator.geolocation.watchPosition(
+            (pos) => pos.coords.latitude
+        ),
+        longitude: navigator.geolocation.watchPosition(
+            (pos) => pos.coords.latitude
+        ),
     },
     setGeoLocation: () => {},
     registerOrganization: async (data: any): Promise<void> => {},
     registerDoctor: async (data: any): Promise<void> => {},
+    loginUser: async (
+        data: any,
+        type: "individual" | "organization" | "doctor" | "admin"
+    ): Promise<any> => {},
+    loggedInUser: null,
+    setLoggedInUser: () => {},
+    loggedInUserType: "individual",
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
     const [fcmToken, setFcmToken] = useState<string>("");
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isAuthenticated, setIsAuthenticated] = usePersistState(
+        "accessToken",
+        false
+    );
     const [loading, setLoading] = useState<boolean>(false);
-    const [loadingValue, setLoadingValue] = useState<number>(50);
+    const [loadingValue, setLoadingValue] = useState<number>(0);
     const [geoLocation, setGeoLocation] = useState({
         latitude: 0,
         longitude: 0,
     });
-    const checkAuthStatus = () => {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        if (token) {
-            setIsAuthenticated(true);
-        }
-        setLoading(false);
-    };
+    const [loggedInUser, setLoggedInUser] = useState();
+    const [loggedInUserType, setLoggedInUserType] = useState<
+        "individual" | "organization" | "doctor" | "admin"
+    >("individual");
 
     async function requestPermission() {
         const permission = await Notification.requestPermission();
@@ -73,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                     "BPSW6Z9tSw-WLO4qvrxMZykj0R07mGFWl0bAUhtbaETegyVPTi9nuSQu6N1xzIkbikQ6-adQpHR7Rjk_09O6yuA",
             });
             setFcmToken(token || ""); // Use empty string as fallback
-            checkAuthStatus();
         } else if (permission === "denied") {
             setFcmToken("");
         }
@@ -81,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const host = "http://localhost:8000/api/v1";
     const registerIndividual = async (data: any): Promise<void> => {
+        console.log(data);
         try {
             console.log(data);
             const formData = new FormData();
@@ -134,8 +156,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             formData.append("password", data.password);
             formData.append("dateOfBirth", data.dateOfBirth);
             formData.append("doctorId", data.doctorId);
-            formData.append("gender",data.gender)
-            formData.append("avatar",data.avatar);
+            formData.append("gender", data.gender);
+            formData.append("avatar", data.avatar);
             const mongoUser = await axios.post(
                 `${host}/auth/doctor/register`,
                 formData
@@ -146,9 +168,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
+    const loginUser = async (
+        data: any,
+        type: "individual" | "organization" | "doctor" | "admin"
+    ): Promise<boolean> => {
+        data.fcmToken = fcmToken;
+        data.location = JSON.stringify(geoLocation);
+        try {
+            const userDetails = await axios.post(
+                `${host}/auth/login/${type}`,
+                data
+            );
+            console.log(userDetails);
+            if (userDetails.statusText === "OK") {
+                localStorage.clear();
+                localStorage.setItem(
+                    `accessToken`,
+                    userDetails.data?.data?.accessToken
+                );
+                localStorage.setItem(
+                    `refreshToken`,
+                    userDetails.data?.data?.refreshToken
+                );
+                localStorage.setItem(
+                    "loggedInUserData",
+                    JSON.stringify(userDetails.data?.data?.user)
+                );
+                localStorage.setItem("loginType", type);
+                setIsAuthenticated(true);
+                setLoggedInUser(userDetails.data?.data?.user);
+                setLoggedInUserType(type);
+                return true;
+            } else return false;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    };
+
     useEffect(() => {
+        const fetchAuthStatus = () => {
+            setLoading(true);
+
+            const token =
+                localStorage.getItem("individualFirebaseToken") ||
+                localStorage.getItem("organizationFirebaseToken") ||
+                localStorage.getItem("doctorAccessToken");
+
+            if (token) {
+                const logUser = localStorage.getItem("loggedInUser");
+                if (logUser) {
+                    const user = JSON.parse(logUser);
+                    setLoggedInUser(() => user);
+                    setIsAuthenticated(() => true); // Set isAuthenticated immediately after user is logged in
+                }
+            }
+
+            setLoading(false);
+        };
         requestPermission();
-        checkAuthStatus();
+        fetchAuthStatus();
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(
                 (position) => {
@@ -164,7 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } else {
             console.error("Geolocation is not supported by this browser.");
         }
-    }, []);
+    }, [isAuthenticated, setIsAuthenticated]);
 
     return (
         <AuthContext.Provider
@@ -182,6 +261,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 setGeoLocation,
                 registerOrganization,
                 registerDoctor,
+                loginUser,
+                loggedInUser,
+                setLoggedInUser,
+                loggedInUserType,
             }}
         >
             {children}

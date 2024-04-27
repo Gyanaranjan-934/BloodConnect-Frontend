@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import eyeClosed from "../../assets/eye-close-svgrepo-com.svg";
-import eyeOpended from "../../assets/eye-open-svgrepo-com.svg";
-import { AuthContext } from "../../context/auth/AuthContext";
+import eyeClosed from "../../../assets/eye-close-svgrepo-com.svg";
+import eyeOpended from "../../../assets/eye-open-svgrepo-com.svg";
+import { AuthContext } from "../../../context/auth/AuthContext";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 const DoctorRegisterForm = () => {
