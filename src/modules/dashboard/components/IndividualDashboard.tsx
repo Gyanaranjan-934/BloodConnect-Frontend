@@ -1,8 +1,5 @@
 import React from "react";
-import {
-    DashboardContext,
-    IndividualDetailsType,
-} from "../../../context/DashboardContext";
+import { DashboardContext } from "../DashboardContext";
 import {
     Avatar,
     Button,
@@ -10,15 +7,15 @@ import {
     Input,
     Typography,
 } from "@material-tailwind/react";
-import { UserIcon } from "@heroicons/react/24/solid";
 import moment from "moment";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { DefaultIndividual } from "../../../services/constants";
 import { AuthContext } from "../../../context/auth/AuthContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-
+import DashboardHeader from "./DashboardHeader";
+import BloodReport from "./BloodReport";
+import { IndividualDashboardType } from "../types";
 
 const TABLE_HEAD = ["Date", "Units"];
 
@@ -42,44 +39,38 @@ const TABLE_ROWS = [
 ];
 
 const IndividualDashboard = () => {
-    const { getDashboardDetails } = React.useContext(DashboardContext);
+    const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
+    const { getUserDashboard } = React.useContext(DashboardContext);
     const [editEnabled, enableEdit] = React.useState(false);
-    const [userDetails, setUserDetails] =
-        React.useState<IndividualDetailsType>(DefaultIndividual);
-    const {setLoadingValue} = React.useContext(AuthContext);
+    const { setLoadingValue } = React.useContext(AuthContext);
     const queryClient = useQueryClient();
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["dashboard"],
-        queryFn: getDashboardDetails,
-        
+        queryFn: getUserDashboard,
     });
     const mutation = useMutation({
-        mutationFn: getDashboardDetails,
+        mutationFn: getUserDashboard,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
         },
         onError: (error) => {
-            toast(error?.message || "Error fetching dashboard", { type: "error" });
+            toast(error?.message || "Error fetching dashboard", {
+                type: "error",
+            });
             console.log("Error fetching dashboard:", error);
         },
     });
 
     React.useEffect(() => {
         setLoadingValue(100);
-        if(!data){
+        if (!data) {
             mutation.mutate();
         }
     }, []);
-    
-    if(isLoading){
-        return <div>Loading...</div>;
-    }
-    
-    
-    
-    const individualDashboard : IndividualDetailsType = data?.data?.data; 
-    
 
+    const individualDashboard: IndividualDashboardType = data;
+    const [userDetails, setUserDetails] =
+        React.useState<IndividualDashboardType>(individualDashboard);
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setUserDetails({ ...userDetails, [name]: value });
@@ -88,18 +79,14 @@ const IndividualDashboard = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
     };
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <div className="flex p-2 flex-col h-screen bg-gray-100 w-full">
-            <Typography
-                placeholder={""}
-                title="User Dashboard"
-                className="text-center font-extrabold text-3xl"
-            >
-                User Dashboard
-            </Typography>
+        <>
+            <DashboardHeader setIsAlertPopupOpen={setIsAlertPopupOpen} />
             <div className="m-4 p-4 ">
-                {/* Main Container */}
                 <div className="flex rounded-md gap-1 justify-around">
                     <div className="p-4 flex bg-gray-200 rounded shadow flex-col w-[70%] ">
                         {/* Header Container */}
@@ -111,14 +98,11 @@ const IndividualDashboard = () => {
                                         variant="circular"
                                         size="lg"
                                         alt={
-                                            individualDashboard?.fullName ||
+                                            individualDashboard?.name ||
                                             "No Name"
                                         }
                                         className="border border-gray-900 p-0.5"
-                                        src={
-                                            individualDashboard?.avatar ||
-                                            UserIcon
-                                        }
+                                        src={individualDashboard?.avatar}
                                     />
                                 </div>
                                 {/* Full Name */}
@@ -127,7 +111,8 @@ const IndividualDashboard = () => {
                                         placeholder={""}
                                         className="text-xl font-semibold"
                                     >
-                                        {individualDashboard?.fullName ||
+                                        {individualDashboard.name ||
+                                            individualDashboard?.fullName ||
                                             "No Name"}
                                     </Typography>
                                 </div>
@@ -737,7 +722,9 @@ const IndividualDashboard = () => {
                     </div>
                 </div>
             </div>
-        </div>
+
+            {isAlertPopupOpen && <BloodReport onClose={setIsAlertPopupOpen} />}
+        </>
     );
 };
 

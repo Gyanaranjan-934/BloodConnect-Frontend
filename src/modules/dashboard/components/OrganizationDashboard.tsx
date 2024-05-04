@@ -1,5 +1,5 @@
 import React from 'react'
-import { DashboardContext } from '../../../context/DashboardContext';
+import { DashboardContext } from '../DashboardContext';
 
 const OrganizationDashboard = () => {
   const {getUserDashboard} = React.useContext(DashboardContext)

@@ -1,6 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import eyeClosed from "../../../assets/eye-close-svgrepo-com.svg";
-import eyeOpended from "../../../assets/eye-open-svgrepo-com.svg";
 import { AuthContext } from "../../../context/auth/AuthContext";
 import {
     createUserWithEmailAndPassword,
@@ -10,92 +9,50 @@ import {
 import { firebaseApp } from "../../../services/firebase";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
+import { Input, Typography, Select, Option } from "@material-tailwind/react";
+import {
+    faEye,
+    faEyeSlash,
+    faInfoCircle,
+    faCheckCircle,
+    faTimesCircle,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    OrganizationType,
+    DefaultOrganization,
+    checkPasswordStrength,
+    statesOfIndia,
+} from "../utils";
+import StepperComponent from "./Stepper";
 
 export function OrganizationRegisterForm() {
-    const [userDetails, setUserDetails] = React.useState({
-        organizationName: "",
-        email: "",
-        organizationHeadName: "",
-        organizationHeadAdhaar: "",
-        password: "",
-        confirmPassword: "",
-        phoneNo: "",
-        address: {
-            street: "",
-            city: "",
-            state: "",
-            pincode: "",
-        },
-        type: "",
-        cinNo: "",
-    });
-    const [loading, setLoading] = React.useState<boolean>(false);
-    const [cinError, setCINError] = useState<string>("");
-    const [presentState, setPresentState] = useState<string>("");
-    const [phoneError, setPhoneError] = useState<string>("");
+    const [activeStep, setActiveStep] = React.useState(0);
+    const [isLastStep, setIsLastStep] = React.useState(false);
+    const [isFirstStep, setIsFirstStep] = React.useState(false);
+    const handleNext = () => !isLastStep && setActiveStep((cur) => cur + 1);
+    const handlePrev = () => !isFirstStep && setActiveStep((cur) => cur - 1);
+    const [organizationDetails, setOrganizationDetails] =
+        React.useState<OrganizationType>(DefaultOrganization);
+    const [cinError, setCINError] = useState<boolean>(true);
+    const [phoneError, setPhoneError] = useState<boolean>(true);
     const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [passwordStrength, setPasswordStrength] = useState<string>("weak");
+    const [passwordStrength, setPasswordStrength] = useState<"Strong" | "Weak">(
+        "Weak"
+    );
     const [passwordMatch, setPasswordMatch] = useState<boolean>(false);
-    const [adhaarError, setAdhaarError] = useState<string>("");
-    const [presentStateDropdownOpen, setPresentDropdownOpen] =
-        useState<boolean>(false);
+    const [adhaarError, setAdhaarError] = useState<boolean>(true);
     const { registerOrganization, setLoadingValue } =
         React.useContext(AuthContext);
-    const typesOfOrganization = [
-        "Healthcare",
-        "Educational",
-        "Charity",
-        "Other",
-    ];
-    const statesOfIndia = [
-        "Andhra Pradesh",
-        "Arunachal Pradesh",
-        "Assam",
-        "Bihar",
-        "Chhattisgarh",
-        "Goa",
-        "Gujarat",
-        "Haryana",
-        "Himachal Pradesh",
-        "Jharkhand",
-        "Karnataka",
-        "Kerala",
-        "Madhya Pradesh",
-        "Maharashtra",
-        "Manipur",
-        "Meghalaya",
-        "Mizoram",
-        "Nagaland",
-        "Odisha",
-        "Punjab",
-        "Rajasthan",
-        "Sikkim",
-        "Tamil Nadu",
-        "Telangana",
-        "Tripura",
-        "Uttar Pradesh",
-        "Uttarakhand",
-        "West Bengal",
-        "Andaman and Nicobar Islands",
-        "Chandigarh",
-        "Dadra and Nagar Haveli and Daman and Diu",
-        "Lakshadweep",
-        "Delhi",
-        "Puducherry",
-    ];
-    const [typeDropDownOpen, setTypeDropDownOpen] = useState<boolean>(false);
-    const [orgType, setOrgType] = useState<string>("");
-
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
             setLoadingValue(10);
-            setLoading(true);
             const auth = getAuth(firebaseApp);
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
-                userDetails.email,
-                userDetails.password
+                organizationDetails.email,
+                organizationDetails.password
             );
             setLoadingValue(50);
             if (userCredential.user) {
@@ -108,39 +65,22 @@ export function OrganizationRegisterForm() {
                     }
                 );
                 setLoadingValue(70);
-                await registerOrganization(userDetails);
+                await registerOrganization(organizationDetails);
                 setLoadingValue(100);
                 <Navigate to={"/login"} />;
             }
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
-        }finally{
-            setLoading(false);
-        }
-    };
-    const checkPasswordStrength = (password: string) => {
-        const isStrongPassword =
-            /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(
-                password
-            );
-        if (password.length === 0) {
-            setPasswordStrength("weak");
-        } else if (!isStrongPassword) {
-            setPasswordStrength(
-                "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
-            );
-        } else {
-            setPasswordStrength("Strong");
         }
     };
     const formHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
-        setUserDetails({ ...userDetails, [name]: value });
+        setOrganizationDetails({ ...organizationDetails, [name]: value });
 
         if (name === "password") {
-            checkPasswordStrength(value);
-            if (userDetails.confirmPassword !== value) {
+            checkPasswordStrength(value, setPasswordStrength);
+            if (organizationDetails.confirmPassword !== value) {
                 setPasswordMatch(false);
             } else {
                 setPasswordMatch(true);
@@ -148,22 +88,22 @@ export function OrganizationRegisterForm() {
         }
 
         if (name === "confirmPassword") {
-            if (userDetails.password !== value) {
+            if (
+                organizationDetails.password !== value ||
+                organizationDetails.confirmPassword === ""
+            ) {
                 setPasswordMatch(false);
             } else {
                 setPasswordMatch(true);
             }
         }
 
-        // Additional validation for phone and adhaar
-        if (name === "phoneNo") {
+        if (name === "phone") {
             const isValidNumber = /^\d{10}$/g.test(value);
             if (!isValidNumber) {
-                setPhoneError(
-                    "Phone number should be 10 digits and contain only numeric values."
-                );
+                setPhoneError(true);
             } else {
-                setPhoneError("Valid");
+                setPhoneError(false);
             }
         }
 
@@ -172,449 +112,363 @@ export function OrganizationRegisterForm() {
                 value
             );
             if (!isValidCIN) {
-                setCINError("Invalid CIN");
+                setCINError(true);
             } else {
-                setCINError("Valid");
+                setCINError(false);
             }
         }
 
         if (name === "organizationHeadAdhaar") {
             const isValidNumber = /^\d{12}$/g.test(value);
             if (!isValidNumber) {
-                setAdhaarError(
-                    "Adhaar number should be 12 digits and contain only numeric values."
-                );
+                setAdhaarError(true);
             } else {
-                setAdhaarError("Valid");
+                setAdhaarError(false);
             }
         }
     };
     return (
-        <div className="mx-auto w-full bg-white">
+        <div className="w-full py-4 px-8 flex flex-col gap-y-10">
             <form onSubmit={handleSubmit}>
-                {/* Name and Phone */}
-                <div className="-mx-3 flex flex-wrap">
-                    <div className="w-full px-3 sm:w-1/2">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="organizationName"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Name of Organization
-                            </label>
-                            <input
-                                type="text"
-                                name="organizationName"
-                                id="organizationName"
-                                placeholder="Full Name"
-                                value={userDetails.organizationName}
-                                onChange={formHandler}
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            />
-                        </div>
-                    </div>
-                    <div className="w-full px-3 sm:w-1/2">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="phoneNo"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Phone Number
-                            </label>
-                            <input
-                                type="tel"
-                                name="phoneNo"
-                                id="phoneNo"
-                                value={userDetails.phoneNo}
-                                onChange={formHandler}
-                                placeholder="Enter your phone number"
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            />
-                            {phoneError && (
-                                <div
-                                    className={`${phoneError === "Valid" ? "text-green-500" : "text-red-500"} text-sm`}
-                                >
-                                    {phoneError}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                {/* Email and CIN and Type*/}
-                <div className="-mx-3 flex flex-wrap">
-                    <div className="w-full px-3 sm:w-1/3">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="email"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                id="email"
-                                placeholder="Enter your email"
-                                value={userDetails.email}
-                                onChange={formHandler}
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            />
-                        </div>
-                    </div>
-                    <div className=" w-full px-3 sm:w-1/3">
-                        <div className=" mb-5">
-                            <label
-                                htmlFor="cinNo"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                CIN Number
-                            </label>
-                            <input
-                                type="text"
-                                name="cinNo"
-                                id="cinNo"
+                {/* Name, Email, Phone Number, CIN  */}
+                {activeStep === 0 && (
+                    <div className="flex flex-col justify-center gap-4">
+                        <Input
+                            crossOrigin={"origin"}
+                            label="Full Name"
+                            placeholder="Full Name"
+                            value={organizationDetails.name}
+                            name="fullName"
+                            type="text"
+                            required
+                            onChange={(e) =>
+                                setOrganizationDetails({
+                                    ...organizationDetails,
+                                    name: e.target.value,
+                                })
+                            }
+                        />
+                        <Input
+                            crossOrigin={"origin"}
+                            label="Email Address"
+                            placeholder="Enter your email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            value={organizationDetails.email}
+                            required
+                            onChange={(e) =>
+                                setOrganizationDetails({
+                                    ...organizationDetails,
+                                    email: e.target.value,
+                                })
+                            }
+                        />
+                        <div>
+                            <Input
+                                crossOrigin={"origin"}
+                                label="CIN Number"
                                 placeholder="CIN No."
-                                value={userDetails.cinNo}
-                                onChange={formHandler}
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                            />
-                            {cinError && (
-                                <div
-                                    className={`${cinError === "Valid" ? "text-green-500" : "text-red-500"} text-sm`}
-                                >
-                                    {cinError}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="w-full px-3 sm:w-1/3">
-                        <div className="mb-5 relative">
-                            <label
-                                htmlFor="type"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Type of Organization
-                            </label>
-                            <input
-                                type="button"
-                                name="type"
-                                id="type"
-                                value={orgType || "Type of Organization"}
-                                onClick={() =>
-                                    setTypeDropDownOpen(!typeDropDownOpen)
-                                }
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md cursor-pointer"
-                            />
-                            {/* Dropdown */}
-                            {typeDropDownOpen && (
-                                <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                                    {typesOfOrganization.map((group) => (
-                                        <div
-                                            key={group}
-                                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                                            onClick={() => {
-                                                setOrgType(group);
-                                                setTypeDropDownOpen(false);
-                                                setUserDetails({
-                                                    ...userDetails,
-                                                    type: group,
-                                                });
-                                            }}
-                                        >
-                                            {group}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                {/* Head name and adhaar */}
-                <div className="-mx-3 flex flex-wrap">
-                    <div className="w-full px-3 sm:w-1/2">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="organizationHeadName"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Head of the Organization
-                            </label>
-                            <input
+                                name="cinNo"
                                 type="text"
-                                name="organizationHeadName"
-                                id="organizationHeadName"
-                                value={userDetails.organizationHeadName}
+                                value={organizationDetails.cinNo}
+                                required
                                 onChange={formHandler}
-                                placeholder="Enter the name of the head of the Organization"
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                             />
+                            <Typography
+                                placeholder={""}
+                                variant="small"
+                                className={`mt-2 flex items-center gap-1 font-normal ${
+                                    cinError ? "text-red-500" : "text-green-500"
+                                }`}
+                            >
+                                <FontAwesomeIcon
+                                    icon={
+                                        !cinError
+                                            ? faCheckCircle
+                                            : faTimesCircle
+                                    }
+                                />
+                                {cinError
+                                    ? "Please enter a valid CIN"
+                                    : "Valid CIN"}
+                            </Typography>
+                        </div>
+                        <div>
+                            <Input
+                                crossOrigin={"origin"}
+                                label="Phone Number"
+                                placeholder="Enter your phone number"
+                                name="phone"
+                                type="tel"
+                                value={organizationDetails.phoneNo}
+                                required
+                                onChange={formHandler}
+                            />
+                            <Typography
+                                placeholder={""}
+                                variant="small"
+                                className={`mt-2 flex items-center gap-1 font-normal ${
+                                    phoneError
+                                        ? "text-red-500"
+                                        : "text-green-500"
+                                }`}
+                            >
+                                <FontAwesomeIcon
+                                    icon={
+                                        !phoneError
+                                            ? faCheckCircle
+                                            : faTimesCircle
+                                    }
+                                />
+                                {phoneError
+                                    ? "Please enter a valid phone number of 10 digits"
+                                    : "Valid phone number"}
+                            </Typography>
                         </div>
                     </div>
-                    <div className="w-full px-3 sm:w-1/2">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="organizationHeadAdhaar"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Adhaar no. of Head
-                            </label>
-                            <input
-                                type="text"
+                )}
+                {activeStep === 1 && (
+                    <div className="flex flex-col justify-center gap-4">
+                        <Input
+                            crossOrigin={"origin"}
+                            label="Organization Head Name"
+                            placeholder="Enter the name of the head of the Organization"
+                            name="organizationHeadName"
+                            type="text"
+                            value={organizationDetails.organizationHeadName}
+                            required
+                            onChange={formHandler}
+                        />
+                        <div>
+                            <Input
+                                required
+                                crossOrigin={"origin"}
+                                label="Adhaar No. of Head"
+                                placeholder="Adhaar No. of Head"
                                 name="organizationHeadAdhaar"
-                                id="organizationHeadAdhaar"
-                                value={userDetails.organizationHeadAdhaar}
+                                value={
+                                    organizationDetails.organizationHeadAdhaar
+                                }
                                 onChange={formHandler}
-                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                             />
-                        </div>
-                        {adhaarError && (
-                            <div
-                                className={`${adhaarError === "Valid" ? "text-green-500" : "text-red-500"} text-sm`}
+                            <Typography
+                                placeholder={""}
+                                variant="small"
+                                className={`mt-2 flex items-center gap-1 font-normal ${
+                                    adhaarError
+                                        ? "text-red-500"
+                                        : "text-green-500"
+                                }`}
                             >
-                                {adhaarError}
-                            </div>
-                        )}
-                    </div>
-                </div>
-                {/* Password and confirm password */}
-                <div className="-mx-3 flex flex-wrap">
-                    <div className="w-full px-3 sm:w-1/2">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="password"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    id="password"
-                                    placeholder="Enter your password"
-                                    value={userDetails.password}
-                                    onChange={formHandler}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md pr-10"
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-600 focus:outline-none"
-                                    onClick={() =>
-                                        setShowPassword(!showPassword)
+                                <FontAwesomeIcon
+                                    icon={
+                                        !adhaarError
+                                            ? faCheckCircle
+                                            : faTimesCircle
                                     }
-                                >
-                                    {showPassword ? (
-                                        <img
-                                            src={eyeClosed}
-                                            height="20px"
-                                            width="20px"
-                                            alt="Closed Eye"
-                                        />
-                                    ) : (
-                                        <img
-                                            src={eyeOpended}
-                                            height="20px"
-                                            width="20px"
-                                            alt="Open Eye"
-                                        />
-                                    )}
-                                </button>
-                            </div>
-                            <div
-                                className={`text-sm ${passwordStrength === "weak" ? "text-red-500" : passwordStrength === "Strong" ? "text-green-500" : "text-yellow-500"}`}
-                            >
-                                {passwordStrength}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="w-full px-3 sm:w-1/2">
-                        <div className="mb-5">
-                            <label
-                                htmlFor="confirmPassword"
-                                className="mb-3 block text-base font-medium text-[#07074D]"
-                            >
-                                Confirm Password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="confirmPassword"
-                                    id="confirmPassword"
-                                    placeholder="Enter your password"
-                                    value={userDetails.confirmPassword}
-                                    onChange={formHandler}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md pr-10"
                                 />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-600 focus:outline-none"
-                                    onClick={() =>
-                                        setShowPassword(!showPassword)
-                                    }
-                                >
-                                    {showPassword ? (
-                                        <img
-                                            src={eyeClosed}
-                                            height="20px"
-                                            width="20px"
-                                            alt="Closed Eye"
-                                        />
-                                    ) : (
-                                        <img
-                                            src={eyeOpended}
-                                            height="20px"
-                                            width="20px"
-                                            alt="Open Eye"
-                                        />
-                                    )}
-                                </button>
-                            </div>
-                            <div
-                                className={`text-sm ${!passwordMatch ? "text-red-500" : "text-green-500"}`}
+                                {adhaarError
+                                    ? "Please enter a valid Adhaar No."
+                                    : "Valid Adhaar No."}
+                            </Typography>
+                        </div>
+                        <Select
+                            label="Choose Type of Organization"
+                            placeholder="Type of Organization"
+                            name="typeOfOrganization"
+                            value={organizationDetails.typeOfOrganization}
+                            onChange={(e) =>
+                                setOrganizationDetails({
+                                    ...organizationDetails,
+                                    typeOfOrganization: e as
+                                        | "healthcare"
+                                        | "educational"
+                                        | "charity"
+                                        | "other",
+                                })
+                            }
+                        >
+                            <Option value="healthcare">Healthcare</Option>
+                            <Option value="educational">Educational</Option>
+                            <Option value="charity">Charity</Option>
+                            <Option value="other">Other</Option>
+                        </Select>
+
+                        <div>
+                            <Input
+                                name="password"
+                                crossOrigin={"origin"}
+                                label="Password"
+                                placeholder="Enter your password"
+                                value={organizationDetails.password}
+                                type={showPassword ? "text" : "password"}
+                                required
+                                onChange={formHandler}
+                                icon={
+                                    <FontAwesomeIcon
+                                        onClick={() =>
+                                            setShowPassword(!showPassword)
+                                        }
+                                        className=" cursor-pointer"
+                                        icon={showPassword ? faEye : faEyeSlash}
+                                    />
+                                }
+                            />
+                            <Typography
+                                placeholder={""}
+                                variant="small"
+                                className={`mt-2 flex items-center gap-1 font-normal ${passwordStrength === "Weak" ? "text-red-500" : "text-green-500"}`}
                             >
+                                <FontAwesomeIcon icon={faInfoCircle} />
+                                {!organizationDetails.password
+                                    ? "Password Cannot be empty"
+                                    : passwordStrength === "Weak"
+                                      ? "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+                                      : "Strong Password"}
+                            </Typography>
+                        </div>
+                        <div>
+                            <Input
+                                crossOrigin={"origin"}
+                                label="Confirm Password"
+                                placeholder="Enter your password"
+                                type={showPassword ? "text" : "password"}
+                                name="confirmPassword"
+                                value={organizationDetails.confirmPassword}
+                                required
+                                onChange={formHandler}
+                                icon={
+                                    <FontAwesomeIcon
+                                        onClick={() =>
+                                            setShowPassword(!showPassword)
+                                        }
+                                        icon={showPassword ? faEye : faEyeSlash}
+                                    />
+                                }
+                            />
+                            <Typography
+                                placeholder={""}
+                                variant="small"
+                                className={`mt-2 flex items-center gap-1 font-normal ${
+                                    !passwordMatch
+                                        ? "text-red-500"
+                                        : "text-green-500"
+                                }`}
+                            >
+                                <FontAwesomeIcon
+                                    icon={
+                                        passwordMatch
+                                            ? faCheckCircle
+                                            : faTimesCircle
+                                    }
+                                />
                                 {passwordMatch
                                     ? "Password Matched"
                                     : "Password not matching"}
-                            </div>
+                            </Typography>
                         </div>
                     </div>
-                </div>
-                <div>
-                    <p>Present Address</p>
-                    <div className=" -mx-3 flex flex-wrap">
-                        <div className="w-full px-3 sm:w-1/4">
-                            <div className="mb-5">
-                                <label
-                                    htmlFor="presentStreet"
-                                    className="mb-3 block text-base font-medium text-[#07074D]"
-                                >
-                                    Street No.
-                                </label>
-                                <input
-                                    type="text"
-                                    name="presentStreet"
-                                    id="presentStreet"
-                                    value={userDetails.address.street}
+                )}
+                {activeStep === 2 && (
+                    <div className="flex flex-col justify-center gap-4">
+                        <div className="">
+                            <Typography
+                                type="h2"
+                                className="font-semibold text-lg"
+                                placeholder={""}
+                            >
+                                Present Address
+                            </Typography>
+                            <div className="flex flex-col gap-4">
+                                <Input
+                                    crossOrigin={"origin"}
+                                    label="Street No."
+                                    placeholder="Street No."
+                                    value={organizationDetails.address.street}
+                                    required
                                     onChange={(event) => {
-                                        setUserDetails({
-                                            ...userDetails,
+                                        setOrganizationDetails({
+                                            ...organizationDetails,
                                             address: {
-                                                ...userDetails.address,
+                                                ...organizationDetails.address,
                                                 street: event.target.value,
                                             },
                                         });
                                     }}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                                 />
-                            </div>
-                        </div>
-                        <div className="w-full px-3 sm:w-1/4">
-                            <div className="mb-5">
-                                <label
-                                    htmlFor="presentCity"
-                                    className="mb-3 block text-base font-medium text-[#07074D]"
-                                >
-                                    City
-                                </label>
-                                <input
-                                    type="text"
-                                    name="presentCity"
-                                    id="presentCity"
-                                    value={userDetails.address.city}
+                                <Input
+                                    crossOrigin={"origin"}
+                                    label="City"
+                                    placeholder="City"
+                                    value={organizationDetails.address.city}
+                                    required
                                     onChange={(event) => {
-                                        setUserDetails({
-                                            ...userDetails,
+                                        setOrganizationDetails({
+                                            ...organizationDetails,
                                             address: {
-                                                ...userDetails.address,
+                                                ...organizationDetails.address,
                                                 city: event.target.value,
                                             },
                                         });
                                     }}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                                 />
-                            </div>
-                        </div>
-                        <div className="w-full px-3 sm:w-1/4 relative">
-                            <div className="mb-5">
-                                <label
-                                    htmlFor="presentState"
-                                    className="mt-3 block text-base font-medium text-[#07074D]"
+                                <Select
+                                    label="Choose State"
+                                    placeholder="State"
+                                    value={organizationDetails.address.state}
                                 >
-                                    State
-                                </label>
-                                <input
-                                    type="button"
-                                    name="presentState"
-                                    id="presentState"
-                                    value={presentState || "Select State"}
-                                    onClick={() =>
-                                        setPresentDropdownOpen(
-                                            !presentStateDropdownOpen
-                                        )
-                                    }
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md cursor-pointer"
-                                />
-                                {presentStateDropdownOpen && (
-                                    <div className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                                        {statesOfIndia.map((state) => (
-                                            <div
-                                                key={state}
-                                                className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                                                onClick={() => {
-                                                    setPresentState(state);
-                                                    setUserDetails({
-                                                        ...userDetails,
-                                                        address: {
-                                                            ...userDetails.address,
-                                                            state: state,
-                                                        },
-                                                    });
-                                                    setPresentDropdownOpen(
-                                                        false
-                                                    );
-                                                }}
-                                            >
-                                                {state}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="w-full px-3 sm:w-1/4">
-                            <div className="mb-5 relative">
-                                <label
-                                    htmlFor="pinCode"
-                                    className="mb-3 block text-base font-medium text-[#07074D]"
-                                >
-                                    PIN Code
-                                </label>
-                                <input
-                                    type="text"
-                                    name="pinCode"
-                                    id="pinCode"
-                                    value={userDetails.address.pincode}
+                                    {statesOfIndia.map((group) => (
+                                        <Option
+                                            key={group}
+                                            value={group}
+                                            onClick={() => {
+                                                setOrganizationDetails({
+                                                    ...organizationDetails,
+                                                    address: {
+                                                        ...organizationDetails.address,
+                                                        state: group,
+                                                    },
+                                                });
+                                            }}
+                                        >
+                                            {group}
+                                        </Option>
+                                    ))}
+                                </Select>
+                                <Input
+                                    crossOrigin={"origin"}
+                                    label="PIN Code"
+                                    placeholder="PIN Code"
+                                    type="number"
+                                    value={organizationDetails.address.pincode}
+                                    required
                                     onChange={(event) => {
-                                        setUserDetails({
-                                            ...userDetails,
+                                        setOrganizationDetails({
+                                            ...organizationDetails,
                                             address: {
-                                                ...userDetails.address,
-                                                pincode: event.target.value,
+                                                ...organizationDetails.address,
+                                                pincode: Number(
+                                                    event.target.value
+                                                ),
                                             },
                                         });
                                     }}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md "
                                 />
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="flex justify-center">
-                    <button className="hover:shadow-form w-auto rounded-md bg-red-500 py-3 px-8 text-center text-base font-semibold text-white outline-none">
-                        {loading ? "Registering..." : "Register"}
-                    </button>
-                </div>
+                )}
+                <StepperComponent
+                    activeStep={activeStep}
+                    isLastStep={isLastStep}
+                    isFirstStep={isFirstStep}
+                    handleNext={handleNext}
+                    handlePrev={handlePrev}
+                    setIsLastStep={setIsLastStep}
+                    setIsFirstStep={setIsFirstStep}
+                    setActiveStep={setActiveStep}
+                />
             </form>
         </div>
     );

@@ -10,7 +10,8 @@ import React, {
 } from "react";
 import { messaging } from "../../services/firebase";
 import usePersistState from "./usePersistState";
-import axios from "axios";
+import { DoctorType, IndividualUserType, OrganizationType } from "../../modules/auth/utils";
+import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
 
 interface AuthContextType {
     fcmToken: string;
@@ -101,68 +102,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     const host = "http://localhost:8000/api/v1";
-    const registerIndividual = async (data: any): Promise<void> => {
-        console.log(data);
+
+    const registerIndividual = async (
+        data: IndividualUserType
+    ): Promise<void> => {
         try {
+            data.currentLocation = {
+                latitude: geoLocation.latitude,
+                longitude: geoLocation.longitude,
+            };
             console.log(data);
-            const formData = new FormData();
-            formData.append("fullName", data.name);
-            formData.append("email", data.email);
-            formData.append("phoneNo", data.phone);
-            formData.append("password", data.password);
-            formData.append("adhaarNo", data.adhaar);
-            formData.append("bloodGroup", data.bloodGroup);
-            formData.append(
-                "presentAddress",
-                JSON.stringify(data.presentAddress)
+            const mongoUser = await axiosInstance.post(
+                createEndPoint.createIndividual(),
+                data,
             );
-            formData.append(
-                "permanentAddress",
-                JSON.stringify(data.permanentAddress)
-            );
-            formData.append("userDOB", data.userDOB);
-            formData.append("avatar", data.avatar);
-            formData.append("geolocation", JSON.stringify(geoLocation));
-            const mongoUser = await axios.post(
-                `${host}/auth/individual/register`,
-                formData
-            );
-            console.log(mongoUser.data); // Example usage
+            console.log(mongoUser.data);
         } catch (error) {
             console.log(error);
         }
     };
 
-    const registerOrganization = async (data: any): Promise<void> => {
+    const registerOrganization = async (data: OrganizationType): Promise<void> => {
         try {
+            data.currentLocation = {
+                latitude: geoLocation.latitude,
+                longitude: geoLocation.longitude,
+            };
             console.log(data);
-            const mongoUser = await axios.post(
-                `${host}/auth/organization/register`,
+            const mongoUser = await axiosInstance.post(
+                createEndPoint.createOrganization(),
                 data
             );
-            console.log(mongoUser.data); // Example usage
+            console.log(mongoUser.data);
         } catch (error) {
             console.log(error);
         }
     };
 
-    const registerDoctor = async (data: any): Promise<void> => {
+    const registerDoctor = async (data: DoctorType): Promise<void> => {
         try {
             console.log(data);
-            const formData = new FormData();
-            formData.append("fullName", data.fullName);
-            formData.append("email", data.email);
-            formData.append("phoneNo", data.phoneNo);
-            formData.append("password", data.password);
-            formData.append("dateOfBirth", data.dateOfBirth);
-            formData.append("doctorId", data.doctorId);
-            formData.append("gender", data.gender);
-            formData.append("avatar", data.avatar);
-            const mongoUser = await axios.post(
-                `${host}/auth/doctor/register`,
-                formData
+            const mongoUser = await axiosInstance.post(
+                createEndPoint.createDoctor(),
+                data
             );
-            console.log(mongoUser.data); // Example usage
+            console.log(mongoUser.data);
         } catch (error) {
             console.log(error);
         }
@@ -172,11 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         data: any,
         type: "individual" | "organization" | "doctor" | "admin"
     ): Promise<boolean> => {
-        data.fcmToken = fcmToken;
         data.location = JSON.stringify(geoLocation);
         try {
-            const userDetails = await axios.post(
-                `${host}/auth/login/${type}`,
+            const userDetails = await axiosInstance.post(
+                createEndPoint.loginUser(type),
                 data
             );
             console.log(userDetails);
@@ -209,7 +192,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         const fetchAuthStatus = () => {
             setLoading(true);
-
             const token =
                 localStorage.getItem("individualFirebaseToken") ||
                 localStorage.getItem("organizationFirebaseToken") ||

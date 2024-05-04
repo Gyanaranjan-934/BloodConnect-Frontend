@@ -1,26 +1,31 @@
-import axios from "axios";
-import React, { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from "react";
+import { AlertDetailsType, AlertType, NearByUserType } from "../modules/alerts/utils";
+import createEndPoint, { axiosInstance } from "../services/createEndPoint";
 
 type AlertContextType = {
-    setAlert: (alert: string) => void;
-    alert: string;
-    createAlert: (alertDetails: any, patientImage: any) => Promise<any[]>;
-    searchDonors: (currentLocation: any) => Promise<void>; 
+    createAlert: (alertDetails: any) => Promise<NearByUserType[]>;
+    searchDonors: (currentLocation: any) => Promise<NearByUserType[]>;
     sendSelectedDonors: (donors: any) => Promise<void>;
+    getAlerts: () => Promise<AlertType[]>;
+    getReceivedAlerts: () => Promise<AlertType[]>;
+    deleteAlertSent: (alertId: string) => Promise<void>;
+    deleteAlertReceived: (alertId: string) => Promise<void>;
 };
 
 export const AlertContext = React.createContext<AlertContextType>({
-    setAlert: () => {},
-    alert: "",
-    createAlert: async() => {return []},
-    searchDonors: async() => {},
-    sendSelectedDonors: async() => {},
+    createAlert: async () => [],
+    searchDonors: async () => [],
+    sendSelectedDonors: async () => {},
+    getAlerts: async () => [],
+    getReceivedAlerts: async () => [],
+    deleteAlertSent: async () => {},
+    deleteAlertReceived: async () => {},
 });
 
 export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
-    const host = "http://localhost:8000/api/v1";
     const accessToken = localStorage.getItem("accessToken");
     const loginType = localStorage.getItem("loginType");
     const config = {
@@ -29,32 +34,50 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
             userType: loginType,
         },
     };
-    const [alert, setAlert] = useState<string>("");
 
-    const createAlert = async (alertDetails: any, patientImage: any) => {
+    const createAlert = async (
+        alertDetails: AlertDetailsType
+    ): Promise<NearByUserType[]> => {
         const formData = new FormData();
-        console.log(alertDetails);
-        
-        formData.append("patientImage", patientImage);
-        formData.append("patientName", alertDetails.patientName);
-        formData.append("problemDescription", alertDetails.problemDescription);
-        formData.append("age", alertDetails.patientAge);
-        formData.append("gender", alertDetails.gender);
-        formData.append("dateOfRequirement", alertDetails.dateOfRequirement);
-        formData.append("expiryTime", alertDetails.timeOfRequirement);
-        formData.append("address", alertDetails.address);
-        formData.append(
-            "currentLocationCoord",
-            JSON.stringify(alertDetails.coordinates)
-        );
-        formData.append("noOfDonorsToSend", alertDetails.noOfDonorsToSend);
-        formData.append("bloodGroup", alertDetails.bloodGroup);
-        console.log(formData);
+
+        Object.entries(alertDetails).forEach(([key, value]) => {
+            if (key === "patientPhoto" && value instanceof Blob) {
+                formData.append("patientImage", value);
+            } else if (key === "coordinates") {
+                formData.append("currentLocationCoord", JSON.stringify(value));
+            } else {
+                formData.append(key, value ? value.toString() : "");
+            }
+        });
+
         try {
-            const createdAlert = await axios.post(
-                `${host}/alert/create`,
+            const { data } = await axiosInstance.post(
+                createEndPoint.createAlert(),
                 formData,
                 config
+            );
+            return data.data;
+        } catch (error) {
+            console.log("Error creating alert:", error);
+            return [];
+        }
+    };
+
+    const searchDonors = async (
+        currentLocation: any
+    ): Promise<NearByUserType[]> => {
+        try {
+            const createdAlert = await axiosInstance.get(
+                createEndPoint.searchDonors(),
+                {
+                    ...config,
+                    params: {
+                        location: JSON.stringify({
+                            longitude: currentLocation.longitude,
+                            latitude: currentLocation.latitude,
+                        }),
+                    },
+                }
             );
             return createdAlert.data.data;
         } catch (error) {
@@ -63,49 +86,86 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const searchDonors = async (currentLocation: any) => {
+    const sendSelectedDonors = async (donors: any) : Promise<void> => {
         try {
-            console.log(currentLocation);
-
-            const createdAlert = await axios.get(`${host}/alert/find-donors`, {
-                ...config,
-                params: {
-                    location: JSON.stringify({
-                        longitude: currentLocation.longitude,
-                        latitude: currentLocation.latitude,
-                    }),
-                },
-            });
-            console.log(createdAlert.data.data);
-            return createdAlert.data.data;
-        } catch (error) {
-            console.log("Error creating alert:", error);
-        }
-    };
-
-    const sendSelectedDonors = async (donors: any) => {
-        try {
-            console.log(donors);
-            const createdAlert = await axios.post(
-                `${host}/alert/get-donors-list`,
-                {donorList:donors},
+            await axiosInstance.post(
+                createEndPoint.sendSelectedDonors(),
+                { donorList: donors },
                 config
             );
-            console.log(createdAlert);
-            
-            // return createdAlert.data.data;
         } catch (error) {
             console.log("Error creating alert:", error);
-
         }
     };
 
+    const getAlerts = async () : Promise<AlertType[]> => {
+        try {
+            const createdAlerts = await axiosInstance.get(
+                createEndPoint.getCreatedAlerts(),
+                {
+                    ...config,
+                }
+            );
+            console.log(createdAlerts);
+            return createdAlerts.data.data;
+        } catch (error) {
+            console.log("Error getting alert:", error);
+            return [];
+        }
+    };
+
+    const getReceivedAlerts = async () : Promise<AlertType[]> => {
+        try {
+            const createdAlerts = await axiosInstance.get(
+                createEndPoint.getReceivedAlerts(),
+                {
+                    ...config,
+                }
+            );
+            console.log(createdAlerts);
+            return createdAlerts.data.data;
+        } catch (error) {
+            console.log("Error getting alert:", error);
+            return [];
+        }
+    };
+
+    const deleteAlertSent = async (alertId: string) : Promise<void> => {
+        try {
+            const createdAlert = await axiosInstance.delete(
+                createEndPoint.deleteAlertSent(),
+                { ...config, params: { alertId } }
+            );
+            console.log(createdAlert);
+
+            // return createdAlert.data.data;
+        } catch (error) {
+            console.log("Error deleting alert:", error);
+        }
+    };
+
+    const deleteAlertReceived = async (alertId: string) : Promise<void> => {
+        console.log(alertId);
+        try {
+            const createdAlert = await axiosInstance.delete(
+                createEndPoint.deleteAlertReceived(),
+                { ...config, params: { alertId } }
+            );
+            console.log(createdAlert);
+
+            // return createdAlert.data.data;
+        } catch (error) {
+            console.log("Error deleting alert:", error);
+        }
+    };
     const contextValue: AlertContextType = {
-        setAlert,
-        alert,
         createAlert,
         searchDonors,
         sendSelectedDonors,
+        getAlerts,
+        getReceivedAlerts,
+        deleteAlertSent,
+        deleteAlertReceived,
     };
 
     return (

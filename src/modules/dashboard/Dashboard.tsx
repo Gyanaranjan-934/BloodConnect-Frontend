@@ -5,10 +5,11 @@ import AdminDashboard from "./components/AdminDashboard";
 import OrganizationDashboard from "./components/OrganizationDashboard";
 import DoctorDashboard from "./components/DoctorDashboard";
 import ErrorBoundary from "../../ErrorBoundary";
+import { DashboardProvider } from "./DashboardContext";
 
 const Dashboard = () => {
     const { loggedInUserType } = React.useContext(AuthContext);
-    
+
     let dashboardComponent = null;
 
     switch (loggedInUserType) {
@@ -32,7 +33,15 @@ const Dashboard = () => {
             break;
     }
 
-    return <ErrorBoundary>{dashboardComponent}</ErrorBoundary>;
+    return (
+        <>
+            <DashboardProvider>
+                <div className="flex flex-col h-screen bg-gray-100 w-full">
+                    <ErrorBoundary>{dashboardComponent}</ErrorBoundary>
+                </div>
+            </DashboardProvider>
+        </>
+    );
 };
 
 export default Dashboard;

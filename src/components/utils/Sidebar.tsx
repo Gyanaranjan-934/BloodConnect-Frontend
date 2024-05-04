@@ -9,9 +9,15 @@ import {
     AccordionHeader,
 } from "@material-tailwind/react";
 import { ProfileMenu } from "./ProfileMenu";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+    faBellSlash,
+    faDashboard,
+    faEdit,
+    faFeed,
+    faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ErrorBoundary from "../../ErrorBoundary";
 import AlertPage from "../../modules/alerts/AlertPage";
 import SearchDonors from "../donors/SearchDonors";
@@ -20,12 +26,81 @@ import {
     BellAlertIcon,
     BellIcon,
 } from "@heroicons/react/24/solid";
+import CreateAlertForm from "../../modules/alerts/components/CreateAlertForm";
+
+const IndividualSidebarNavLinks = [
+    {
+        label: "Dashboard",
+        path: "/dashboard",
+        icon: faDashboard,
+    },
+    {
+        label: "Alerts",
+        path: "/alerts",
+        icon: faBellSlash,
+    },
+    {
+        label: "Events",
+        path: "/events",
+        icon: faEdit,
+    },
+    {
+        label: "Feeds",
+        path: "/feeds",
+        icon: faFeed,
+    },
+];
+
+const OrganizationSidebarNavLinks = [
+    {
+        label: "Dashboard",
+        path: "/dashboard",
+        icon: faDashboard,
+    },
+    {
+        label: "Feeds",
+        path: "/feeds",
+        icon: faFeed,
+    },
+    {
+        label: "Events",
+        path: "/events",
+        icon: faEdit,
+    },
+];
+
+const DoctorSidebarNavLinks = [
+    {
+        label: "Dashboard",
+        path: "/dashboard",
+        icon: faDashboard,
+    },
+    {
+        label: "Feeds",
+        path: "/feeds",
+        icon: faFeed,
+    },
+    {
+        label: "Events",
+        path: "/events",
+        icon: faEdit,
+    },
+];
 
 export function Sidebar() {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
     const [isSearchDonorsPopupOpen, setIsSearchDonorsPopupOpen] =
         React.useState(false);
     const [accordenOpen, setAccordernOpen] = React.useState<number>(0);
+    const userType = localStorage.getItem("loginType");
+    const navigate = useNavigate();
+
+    const navList =
+        userType === "individual"
+            ? IndividualSidebarNavLinks
+            : userType === "organization"
+              ? OrganizationSidebarNavLinks
+              : DoctorSidebarNavLinks;
 
     const handleOpen = (value: number) => {
         setAccordernOpen(accordenOpen === value ? 0 : value);
@@ -49,61 +124,22 @@ export function Sidebar() {
                         </Typography>
                     </div>
                 </Link>
-                <Accordion
-                    open={accordenOpen === 2}
-                    icon={
-                        <ChevronDownIcon
-                            strokeWidth={2.5}
-                            className={`mx-auto h-4 w-4 transition-transform ${accordenOpen === 2 ? "rotate-180" : ""}`}
-                        />
-                    }
-                    placeholder={""}
-                    title="Alerts"
-                >
+                <List placeholder={""}>
                     <ListItem
-                        className="p-0"
-                        selected={accordenOpen === 2}
+                        onClick={() => setIsAlertPopupOpen(true)}
                         placeholder={""}
                     >
-                        <AccordionHeader
-                            onClick={() => handleOpen(2)}
-                            className="border-b-0 p-3"
-                            placeholder={""}
+                        <ListItemPrefix placeholder={""}>
+                            <BellIcon className="h-5 w-5" />
+                        </ListItemPrefix>
+                        <Typography
+                            placeholder={"Menu"}
+                            variant="small"
+                            className="font-normal"
                         >
-                            <ListItemPrefix placeholder={""}>
-                                <BellAlertIcon className="h-5 w-5" />
-                            </ListItemPrefix>
-                            <Typography
-                                color="blue-gray"
-                                className="mr-auto font-normal"
-                                placeholder={""}
-                            >
-                                Alerts
-                            </Typography>
-                        </AccordionHeader>
+                            Create Blood Alert
+                        </Typography>
                     </ListItem>
-                    <AccordionBody className="py-1">
-                        <List className="p-0" placeholder={""}>
-                            <ListItem
-                                onClick={() => setIsAlertPopupOpen(true)}
-                                className=" ml-2"
-                                placeholder={""}
-                            >
-                                <ListItemPrefix placeholder={""}>
-                                    <BellIcon className="h-5 w-5" />
-                                </ListItemPrefix>
-                                <Typography
-                                    placeholder={"Menu"}
-                                    variant="small"
-                                    className="font-normal"
-                                >
-                                    Create Blood Alert
-                                </Typography>
-                            </ListItem>
-                        </List>
-                    </AccordionBody>
-                </Accordion>
-                <List placeholder={""}>
                     <ListItem placeholder={""}>
                         <ListItemPrefix placeholder={""}>
                             <FontAwesomeIcon icon={faSearch} />
@@ -117,10 +153,31 @@ export function Sidebar() {
                             Search Donors
                         </Typography>
                     </ListItem>
+                    {navList.map((link) => (
+                        <ListItem
+                            key={link.label}
+                            onClick={() => {
+                                navigate(link.path);
+                            }}
+                            placeholder={""}
+                        >
+                            <ListItemPrefix placeholder={""}>
+                                <FontAwesomeIcon icon={link.icon} />
+                            </ListItemPrefix>
+                            <Typography
+                                placeholder={"Menu"}
+                                variant="small"
+                                className="font-normal"
+                            >
+                                {link.label}
+                            </Typography>
+                        </ListItem>
+                    ))}
                 </List>
+
                 <ProfileMenu />
             </div>
-            {isAlertPopupOpen && <AlertPage onClose={setIsAlertPopupOpen} />}
+            {isAlertPopupOpen && <CreateAlertForm onClose={setIsAlertPopupOpen} />}
             {isSearchDonorsPopupOpen && (
                 <ErrorBoundary>
                     <SearchDonors onClose={setIsSearchDonorsPopupOpen} />

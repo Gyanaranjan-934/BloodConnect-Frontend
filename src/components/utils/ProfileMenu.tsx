@@ -15,10 +15,8 @@ import {
     InboxArrowDownIcon,
     LifebuoyIcon,
     PowerIcon,
-    UserIcon,
 } from "@heroicons/react/24/solid";
 import { Link, Navigate } from "react-router-dom";
-import { DashboardContext } from "../../context/DashboardContext";
 import { AuthContext } from "../../context/auth/AuthContext";
 
 // profile menu component
@@ -52,7 +50,6 @@ const profileMenuItems = [
 
 export function ProfileMenu() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const { individualDashboard } = React.useContext(DashboardContext);
     const closeMenu = () => setIsMenuOpen(false);
     const { setIsAuthenticated } = React.useContext(AuthContext);
 
@@ -71,7 +68,7 @@ export function ProfileMenu() {
                             size="sm"
                             alt="tania andrew"
                             className="border border-gray-900 p-0.5"
-                            src={individualDashboard?.avatar || ""}
+                            src={""}
                         />
                         <Button
                             placeholder={"Profile"}

@@ -46,8 +46,8 @@ const LoginFormComponent = (): ReactElement => {
         console.log(userDetails);
         if (loginType === "individual" || loginType === "organization") {
             try {
-                // const resoponse = await loginUser(userDetails,loginType)
-                // console.log(resoponse);
+                const response = await loginUser(userDetails,loginType)
+                console.log(response);
                 const auth = getAuth(firebaseApp);
                 const loggedInUser = await signInWithEmailAndPassword(
                     auth,
