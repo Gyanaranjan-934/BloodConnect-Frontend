@@ -68,7 +68,7 @@ const Map = ({
     } | null>(null);
 
     const { isLoaded, loadError } = useLoadScript({
-        googleMapsApiKey: "AIzaSyDwTywZq2hev2S1Btoz6HuxKCDfy2Rt5ho",
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_API_KEY,
         libraries: libraries,
     });
 

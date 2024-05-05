@@ -1,9 +1,9 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyDwTywZq2hev2S1Btoz6HuxKCDfy2Rt5ho",
-  authDomain: "bloodconnect-f84bc.firebaseapp.com",
-  projectId: "bloodconnect-f84bc",
-  storageBucket: "bloodconnect-f84bc.appspot.com",
-  messagingSenderId: "706010935390",
-  appId: "1:706010935390:web:e3765c5289f7f9cd0f04cf",
-  measurementId: "G-H9CDB822F3",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
