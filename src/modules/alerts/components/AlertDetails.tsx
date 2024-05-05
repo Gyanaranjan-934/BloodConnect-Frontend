@@ -4,6 +4,8 @@ import {
     faLocationPin,
     faEdit,
     faTrash,
+    faCheckCircle,
+    faCancel,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,24 +20,30 @@ import {
 import moment from "moment";
 import React from "react";
 import { AlertContext } from "../../../context/AlertContext";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AlertType } from "../utils";
 const AlertDetails = ({
     alert,
     type,
 }: {
-    alert: any;
+    alert: AlertType;
     type: "created" | "received";
 }) => {
-    const { deleteAlertSent, deleteAlertReceived } =
+    const { deleteAlertSent, deleteAlertReceived, respondAlert } =
         React.useContext(AlertContext);
     const handleDelete = () => {
-        console.log("delete");
-
         if (type === "created") {
             deleteAlertSent(alert._id);
         } else {
             deleteAlertReceived(alert._id);
         }
+    };
+
+    const handleAccept = () => {
+        respondAlert(alert._id, true);
+    };
+
+    const handleReject = () => {
+        respondAlert(alert._id, false);
     };
 
     return (
@@ -127,7 +135,10 @@ const AlertDetails = ({
                 </div>
             </div>
             {type === "created" ? (
-                <ListItemSuffix className="flex flex-col gap-2">
+                <ListItemSuffix
+                    placeholder={""}
+                    className="flex flex-col gap-2"
+                >
                     {new Date() <= new Date(alert.expiryTime) ? (
                         <Button
                             variant="gradient"
@@ -152,17 +163,30 @@ const AlertDetails = ({
                     </Button>
                 </ListItemSuffix>
             ) : (
-                <ListItemSuffix className="flex flex-col gap-2">
+                <ListItemSuffix
+                    placeholder={""}
+                    className="flex flex-col gap-2"
+                >
                     {new Date() <= new Date(alert.expiryTime) ? (
                         <>
+                            {/* Only to show the accept button if the alert is not expired */}
                             <Button
                                 variant="gradient"
                                 size="sm"
                                 color="light-blue"
-                                onClick={() => {}}
                                 placeholder={""}
+                                onClick={handleAccept}
                             >
-                                <FontAwesomeIcon icon={faEdit} />
+                                <FontAwesomeIcon icon={faCheckCircle} /> Accept
+                            </Button>
+                            <Button
+                                variant="gradient"
+                                size="sm"
+                                color="red"
+                                placeholder={""}
+                                onClick={handleReject}
+                            >
+                                <FontAwesomeIcon icon={faCancel} /> Reject
                             </Button>
                         </>
                     ) : (

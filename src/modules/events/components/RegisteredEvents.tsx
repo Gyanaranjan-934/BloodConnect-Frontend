@@ -1,21 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { EventContext } from "../EventContext";
+import { useQuery } from "@tanstack/react-query";
 import { EventType } from "../utils";
 import { Card, List } from "@material-tailwind/react";
 import IndividualEventListItem from "./IndividualEventListItem";
 
-export default function FutureEvents() {
-    const { showUpcomingEventsToIndividual } = React.useContext(EventContext);
+export default function RegisteredEvents() {
+    const { getRegisteredEventsToIndividual } = React.useContext(EventContext);
     const { data } = useQuery({
-        queryKey: ["upcomingEvents"],
-        queryFn: showUpcomingEventsToIndividual,
+        queryKey: ["registeredEvents"],
+        queryFn: getRegisteredEventsToIndividual,
     });
-    const upcomingEvents = data ? data : ([] as EventType[]);
+    const registeredEvents = (data ? data : []) as EventType[];
+    console.log(registeredEvents);
+    
     return (
         <Card className="w-full" placeholder={""}>
             <List placeholder={""}>
-                {upcomingEvents.map((event) => (
+                {registeredEvents.map((event) => (
                     <div key={event._id}>
                         <IndividualEventListItem event={event} />
                     </div>

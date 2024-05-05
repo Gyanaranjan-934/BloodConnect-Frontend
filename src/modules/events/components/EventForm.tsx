@@ -17,7 +17,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import MapWithAutocomplete from "../../../components/utils/Map";
 import { AuthContext } from "../../../context/auth/AuthContext";
-import { EventType } from "../utils";
+import { EventInputType } from "../utils";
 import { EventContext } from "../EventContext";
 import { DoctorDetailsType } from "../../auth/utils";
 
@@ -27,16 +27,16 @@ const EventForm = ({
     setEventDetails,
 }: {
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
-    eventDetails: EventType;
-    setEventDetails: React.Dispatch<React.SetStateAction<EventType>>;
+    eventDetails: EventInputType;
+    setEventDetails: React.Dispatch<React.SetStateAction<EventInputType>>;
 }) => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(true);
-    const [selectedDoctors, setSelectedDoctors] = React.useState<DoctorDetailsType[]>(
-        []
-    );
-    const [doctorsFullList, setDoctorsFullList] = React.useState<DoctorDetailsType[]>(
-        []
-    );
+    const [selectedDoctors, setSelectedDoctors] = React.useState<
+        DoctorDetailsType[]
+    >([]);
+    const [doctorsFullList, setDoctorsFullList] = React.useState<
+        DoctorDetailsType[]
+    >([]);
     const { geoLocation } = React.useContext(AuthContext);
 
     const [selectedLocation, setSelectedLocation] = React.useState<{
@@ -44,7 +44,9 @@ const EventForm = ({
         longitude: number;
     }>(geoLocation);
     const [address, setAddress] = React.useState<string>("");
-    const [doctorsList, setDoctorsList] = React.useState<DoctorDetailsType[]>([]);
+    const [doctorsList, setDoctorsList] = React.useState<DoctorDetailsType[]>(
+        []
+    );
     const [isSearchFocused, setIsSearchFocused] = React.useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [isPaid, setIsPaid] = React.useState(false);
@@ -75,7 +77,7 @@ const EventForm = ({
         };
         fetchDoctors();
     }, []);
-    
+
     const handleFocus = (e: any) => {
         if (e.target.name === "doctors") {
             setIsSearchFocused(true);
@@ -103,7 +105,6 @@ const EventForm = ({
                 doctorsList: selectedDoctors.map((doctor) => doctor._id),
                 startDate: eventStartDate,
                 endDate: eventEndDate,
-
             });
             const createdEvent = await createEvent(eventDetails);
             console.log(createdEvent);
@@ -343,7 +344,9 @@ const EventForm = ({
                                                     (doctor) => (
                                                         <Chip
                                                             className="m-1"
-                                                            value={doctor.fullName}
+                                                            value={
+                                                                doctor.fullName
+                                                            }
                                                             onClose={() => {
                                                                 setSelectedDoctors(
                                                                     (
@@ -389,15 +392,18 @@ const EventForm = ({
                                                                 .toLowerCase()
                                                                 .includes(
                                                                     name.toLowerCase()
-                                                                ) || doctor.email
+                                                                ) ||
+                                                            doctor.email
                                                                 .toLowerCase()
                                                                 .includes(
                                                                     name.toLowerCase()
-                                                                ) || doctor.phoneNo
+                                                                ) ||
+                                                            doctor.phoneNo
                                                                 .toLowerCase()
                                                                 .includes(
                                                                     name.toLowerCase()
-                                                                ) || doctor.doctorId
+                                                                ) ||
+                                                            doctor.doctorId
                                                                 .toLowerCase()
                                                                 .includes(
                                                                     name.toLowerCase()

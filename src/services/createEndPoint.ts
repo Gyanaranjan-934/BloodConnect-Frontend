@@ -26,4 +26,9 @@ export default {
     deleteAlertReceived: (): string => "/alert/delete-alert-by-recipient",
     getReceivedAlerts: (): string => "/alert/get-received-alerts",
     getCreatedAlerts: (): string => "/alert/get-created-alerts",
+    respondAlert: (): string => "/alert/respond-alert",
+    showUpcomingEventsIndividual: (): string => "/event/get-upcoming-events",
+    showEventsOrganization: (): string => "/event/get-events",
+    showRegisteredEventsIndividual: (): string => "/event/get-registered-events",
+    registerForEventByIndividual: (): string => "/event/register-by-self",
 };

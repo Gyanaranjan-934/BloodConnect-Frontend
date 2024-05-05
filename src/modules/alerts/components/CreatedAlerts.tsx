@@ -2,10 +2,7 @@
 import React from "react";
 import { AlertContext } from "../../../context/AlertContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    Card,
-    List,
-} from "@material-tailwind/react";
+import { Card, List } from "@material-tailwind/react";
 import AlertDetails from "./AlertDetails";
 
 const CreatedAlerts = () => {
@@ -26,9 +23,16 @@ const CreatedAlerts = () => {
     return (
         <div>
             <Card className="w-full" placeholder={""}>
-                <List placeholder={""} className="max-h-screen overflow-y-auto no-scrollbar">
+                <List
+                    placeholder={""}
+                    className="max-h-screen overflow-y-auto no-scrollbar"
+                >
                     {(data as any)?.map((alert: any) => (
-                        <AlertDetails key={alert._id} alert={alert} type="created" />
+                        <AlertDetails
+                            key={alert._id}
+                            alert={alert}
+                            type="created"
+                        />
                     ))}
                 </List>
             </Card>

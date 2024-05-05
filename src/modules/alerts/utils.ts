@@ -26,7 +26,7 @@ export type AlertDetailsType = {
     patientAge: string;
     gender: string;
     dateOfRequirement: string;
-    timeOfRequirement: string;
+    expiryTime: string;
     address: string;
     coordinates: {
         latitude: number;
@@ -43,7 +43,7 @@ export const InitialAlertDetails: AlertDetailsType = {
     patientAge: "",
     gender: "",
     dateOfRequirement: "",
-    timeOfRequirement: "",
+    expiryTime: "",
     address: "",
     coordinates: {
         latitude: 0,

@@ -1,16 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { AlertDetailsType, AlertType, NearByUserType } from "../modules/alerts/utils";
+import {
+    AlertDetailsType,
+    AlertType,
+    LocationType,
+    NearByUserType,
+} from "../modules/alerts/utils";
 import createEndPoint, { axiosInstance } from "../services/createEndPoint";
+import { toast } from "react-toastify";
 
 type AlertContextType = {
-    createAlert: (alertDetails: any) => Promise<NearByUserType[]>;
-    searchDonors: (currentLocation: any) => Promise<NearByUserType[]>;
-    sendSelectedDonors: (donors: any) => Promise<void>;
+    createAlert: (
+        alertDetails: AlertDetailsType,
+        selectedLocation: LocationType,
+        address: string
+    ) => Promise<NearByUserType[]>;
+    searchDonors: (currentLocation: LocationType) => Promise<NearByUserType[]>;
+    sendSelectedDonors: (donors: NearByUserType[]) => Promise<void>;
     getAlerts: () => Promise<AlertType[]>;
     getReceivedAlerts: () => Promise<AlertType[]>;
     deleteAlertSent: (alertId: string) => Promise<void>;
     deleteAlertReceived: (alertId: string) => Promise<void>;
+    respondAlert: (alertId: string, isAccepted: boolean) => Promise<void>;
 };
 
 export const AlertContext = React.createContext<AlertContextType>({
@@ -21,6 +32,7 @@ export const AlertContext = React.createContext<AlertContextType>({
     getReceivedAlerts: async () => [],
     deleteAlertSent: async () => {},
     deleteAlertReceived: async () => {},
+    respondAlert: async () => {},
 });
 
 export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -36,19 +48,27 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const createAlert = async (
-        alertDetails: AlertDetailsType
+        alertDetails: AlertDetailsType,
+        selectedLocation: LocationType,
+        address: string
     ): Promise<NearByUserType[]> => {
+        console.log(selectedLocation, address);
+
         const formData = new FormData();
 
         Object.entries(alertDetails).forEach(([key, value]) => {
             if (key === "patientPhoto" && value instanceof Blob) {
                 formData.append("patientImage", value);
             } else if (key === "coordinates") {
-                formData.append("currentLocationCoord", JSON.stringify(value));
+                formData.append(
+                    "currentLocationCoord",
+                    JSON.stringify(selectedLocation)
+                );
             } else {
                 formData.append(key, value ? value.toString() : "");
             }
         });
+        formData.set("address", address);
 
         try {
             const { data } = await axiosInstance.post(
@@ -56,6 +76,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
                 formData,
                 config
             );
+            console.log(data);
             return data.data;
         } catch (error) {
             console.log("Error creating alert:", error);
@@ -64,7 +85,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const searchDonors = async (
-        currentLocation: any
+        currentLocation: LocationType
     ): Promise<NearByUserType[]> => {
         try {
             const createdAlert = await axiosInstance.get(
@@ -86,7 +107,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const sendSelectedDonors = async (donors: any) : Promise<void> => {
+    const sendSelectedDonors = async (donors: NearByUserType[]): Promise<void> => {
         try {
             await axiosInstance.post(
                 createEndPoint.sendSelectedDonors(),
@@ -98,7 +119,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const getAlerts = async () : Promise<AlertType[]> => {
+    const getAlerts = async (): Promise<AlertType[]> => {
         try {
             const createdAlerts = await axiosInstance.get(
                 createEndPoint.getCreatedAlerts(),
@@ -114,7 +135,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const getReceivedAlerts = async () : Promise<AlertType[]> => {
+    const getReceivedAlerts = async (): Promise<AlertType[]> => {
         try {
             const createdAlerts = await axiosInstance.get(
                 createEndPoint.getReceivedAlerts(),
@@ -130,7 +151,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const deleteAlertSent = async (alertId: string) : Promise<void> => {
+    const deleteAlertSent = async (alertId: string): Promise<void> => {
         try {
             const createdAlert = await axiosInstance.delete(
                 createEndPoint.deleteAlertSent(),
@@ -144,7 +165,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const deleteAlertReceived = async (alertId: string) : Promise<void> => {
+    const deleteAlertReceived = async (alertId: string): Promise<void> => {
         console.log(alertId);
         try {
             const createdAlert = await axiosInstance.delete(
@@ -158,6 +179,32 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
             console.log("Error deleting alert:", error);
         }
     };
+
+    const respondAlert = async (
+        alertId: string,
+        isAccepted: boolean
+    ): Promise<void> => {
+        try {
+            const {data} = await axiosInstance.put(
+                createEndPoint.respondAlert(),
+                { alertId, isAccepted },
+                config
+            );
+            if (data.success) {
+                if (isAccepted) {
+                    toast("Alert accepted successfully", { type: "success" });
+                } else {
+                    toast("Alert rejected successfully", { type: "success" });
+                }
+            } else {
+                toast("Alert not responded", { type: "error" });
+            }
+        } catch (error) {
+            console.log("Error responding to alert:", error);
+            toast("Error in responding to alert", { type: "error" });
+        }
+    };
+
     const contextValue: AlertContextType = {
         createAlert,
         searchDonors,
@@ -166,6 +213,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
         getReceivedAlerts,
         deleteAlertSent,
         deleteAlertReceived,
+        respondAlert,
     };
 
     return (

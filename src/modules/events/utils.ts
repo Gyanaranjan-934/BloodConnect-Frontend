@@ -1,4 +1,4 @@
-export type EventType = {
+export type EventInputType = {
     eventName: string;
     eventHeadName: string;
     startDate: string;
@@ -20,11 +20,11 @@ export type EventType = {
     };
 };
 
-export const InitialEventDetails: EventType = {
+export const InitialEventInputDetails: EventInputType = {
     eventName: "",
     eventHeadName: "",
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: "",
+    endDate: "",
     startTime: "",
     endTime: "",
     isPaid: false,
@@ -48,4 +48,33 @@ export const EventConfig = {
         Authorization: `Bearer ${accessToken}`,
         userType: loginType,
     },
+}
+
+export type EventType = {
+    _id: string;
+    eventName: string;
+    eventHeadName: string;
+    startDate: Date;
+    endDate: Date;
+    startTime: string;
+    endTime: string;
+    isPaid: boolean;
+    paymentType?: "cash" | "giftCard" | "coupon";
+    paymentAmount?: number;
+    targetTotalBlood: number;
+    maxDonorCapacity: number;
+    availableStaffCount: number;
+    availableBedCount: number;
+    doctors: string[];
+    address: string;
+    location: {
+        type: "Point";
+        coordinates: [number, number];
+    };
+    donorsRegistered: string[];
+    donorsAttended: string[];
+    createdAt: string;
+    updatedAt: string;
+    isVerified: boolean;
+    __v: number;
 }

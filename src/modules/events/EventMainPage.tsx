@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import EventForm from "./components/EventForm";
-import { EventType, InitialEventDetails } from "./utils";
+import { EventInputType, InitialEventInputDetails } from "./utils";
 import EventHeader from "./components/EventHeader";
 import EventTabs from "./components/EventTabs";
 
 const EventMainPage = () => {
     const [eventDetails, setEventDetails] =
-        useState<EventType>(InitialEventDetails);
+        useState<EventInputType>(InitialEventInputDetails);
     const [isAlertPopupOpen, setIsAlertPopupOpen] = useState(false);
     /*
         create event main page:

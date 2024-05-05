@@ -10,8 +10,13 @@ import React, {
 } from "react";
 import { messaging } from "../../services/firebase";
 import usePersistState from "./usePersistState";
-import { DoctorType, IndividualUserType, OrganizationType } from "../../modules/auth/utils";
+import {
+    DoctorType,
+    IndividualUserType,
+    OrganizationType,
+} from "../../modules/auth/utils";
 import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
+import { LocationType } from "../../modules/alerts/utils";
 
 interface AuthContextType {
     fcmToken: string;
@@ -23,11 +28,8 @@ interface AuthContextType {
     loadingValue: number;
     setLoadingValue: Dispatch<SetStateAction<number>>;
     registerIndividual: (data: any) => Promise<void>;
-    geoLocation: {
-        latitude: number;
-        longitude: number;
-    };
-    setGeoLocation: Dispatch<SetStateAction<any>>;
+    geoLocation: LocationType;
+    setGeoLocation: Dispatch<SetStateAction<LocationType>>;
     registerOrganization: (data: any) => Promise<void>;
     registerDoctor: (data: any) => Promise<void>;
     loginUser: (
@@ -37,6 +39,7 @@ interface AuthContextType {
     loggedInUser: any;
     setLoggedInUser: Dispatch<SetStateAction<any>>;
     loggedInUserType: "individual" | "organization" | "doctor" | "admin";
+    getLocation?: () => LocationType;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -48,7 +51,7 @@ export const AuthContext = createContext<AuthContextType>({
     setLoading: () => {},
     loadingValue: 0,
     setLoadingValue: () => {},
-    registerIndividual: async (data: any): Promise<void> => {},
+    registerIndividual: async (): Promise<void> => {},
     geoLocation: {
         latitude: navigator.geolocation.watchPosition(
             (pos) => pos.coords.latitude
@@ -58,12 +61,9 @@ export const AuthContext = createContext<AuthContextType>({
         ),
     },
     setGeoLocation: () => {},
-    registerOrganization: async (data: any): Promise<void> => {},
-    registerDoctor: async (data: any): Promise<void> => {},
-    loginUser: async (
-        data: any,
-        type: "individual" | "organization" | "doctor" | "admin"
-    ): Promise<any> => {},
+    registerOrganization: async (): Promise<void> => {},
+    registerDoctor: async (): Promise<void> => {},
+    loginUser: async (): Promise<any> => {},
     loggedInUser: null,
     setLoggedInUser: () => {},
     loggedInUserType: "individual",
@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     );
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingValue, setLoadingValue] = useState<number>(0);
-    const [geoLocation, setGeoLocation] = useState({
+    const [geoLocation, setGeoLocation] = useState<LocationType>({
         latitude: 0,
         longitude: 0,
     });
@@ -101,8 +101,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }
 
-    const host = "http://localhost:8000/api/v1";
-
     const registerIndividual = async (
         data: IndividualUserType
     ): Promise<void> => {
@@ -114,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             console.log(data);
             const mongoUser = await axiosInstance.post(
                 createEndPoint.createIndividual(),
-                data,
+                data
             );
             console.log(mongoUser.data);
         } catch (error) {
@@ -122,7 +120,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const registerOrganization = async (data: OrganizationType): Promise<void> => {
+    const registerOrganization = async (
+        data: OrganizationType
+    ): Promise<void> => {
         try {
             data.currentLocation = {
                 latitude: geoLocation.latitude,
@@ -189,9 +189,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
+    const getLocation = (): LocationType => {
+        const location: LocationType = {
+            latitude: 0,
+            longitude: 0,
+        };
+
+        navigator.geolocation.watchPosition((position) => {
+            console.log(position);
+            location.latitude = position.coords.latitude;
+            location.longitude = position.coords.longitude;
+            setGeoLocation(location);
+        });
+
+        console.log(location);
+        return location;
+    };
+
     useEffect(() => {
         const fetchAuthStatus = () => {
-            setLoading(true);
             const token =
                 localStorage.getItem("individualFirebaseToken") ||
                 localStorage.getItem("organizationFirebaseToken") ||
@@ -202,11 +218,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 if (logUser) {
                     const user = JSON.parse(logUser);
                     setLoggedInUser(() => user);
-                    setIsAuthenticated(() => true); // Set isAuthenticated immediately after user is logged in
+                    setIsAuthenticated(() => true);
                 }
             }
-
-            setLoading(false);
         };
         requestPermission();
         fetchAuthStatus();
@@ -225,7 +239,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } else {
             console.error("Geolocation is not supported by this browser.");
         }
-    }, [isAuthenticated, setIsAuthenticated]);
+
+        const userTypeInLocalStorage = localStorage.getItem("loginType");
+        if (userTypeInLocalStorage) {
+            setLoggedInUserType(
+                userTypeInLocalStorage === "individual"
+                    ? "individual"
+                    : userTypeInLocalStorage === "organization"
+                      ? "organization"
+                      : userTypeInLocalStorage === "doctor"
+                        ? "doctor"
+                        : "admin"
+            );
+        }
+    }, [isAuthenticated, setIsAuthenticated, loggedInUserType]);
 
     return (
         <AuthContext.Provider
@@ -247,6 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 loggedInUser,
                 setLoggedInUser,
                 loggedInUserType,
+                getLocation,
             }}
         >
             {children}

@@ -15,17 +15,16 @@ import React, {
 } from "react";
 import { AuthContext } from "../../context/auth/AuthContext";
 import { Input } from "@material-tailwind/react";
+import { LocationType } from "../../modules/alerts/utils";
 
-const libraries:Libraries = ["places"];
+const libraries: Libraries = ["places"];
 
 const Map = ({
     setSelectedLocation,
     setAddress,
     address,
 }: {
-    setSelectedLocation: Dispatch<
-        SetStateAction<{ latitude: number; longitude: number }>
-    >;
+    setSelectedLocation: Dispatch<SetStateAction<LocationType>>;
     setAddress: Dispatch<SetStateAction<string>>;
     address: string;
 }) => {
@@ -60,6 +59,7 @@ const Map = ({
         );
         console.log(placeName);
         setAddress(placeName);
+        console.log(geoLocation);
     }, []);
 
     const [markerCurrentPosition, setMarkerCurrentPosition] = React.useState<{
@@ -78,11 +78,15 @@ const Map = ({
     function locationSelected() {
         if (searchResult) {
             const place = searchResult.getPlace();
-            setAddress(`${place.name}, ${place.formatted_address}, ph: ${place.formatted_phone_number}` || ""); 
+            setAddress(
+                `${place.name}, ${place.formatted_address}${place.formatted_phone_number ? `, ph: ${place.formatted_phone_number}` : ""}` ||
+                    ""
+            );
             setMarkerCurrentPosition({
                 lat: place.geometry?.location?.lat(),
                 lng: place.geometry?.location?.lng(),
             });
+            console.log(place);
             setSelectedLocation({
                 latitude:
                     place.geometry?.location?.lat() || geoLocation.latitude,
@@ -108,7 +112,7 @@ const Map = ({
                 />
             </Autocomplete>
             {isLoaded && (
-                <div className="m-4 p-4 h-[30rem] w-full bg-white"> 
+                <div className="m-4 p-4 h-[30rem] w-full bg-white">
                     <GoogleMap
                         mapContainerStyle={mapContainerStyle}
                         zoom={10}
@@ -119,6 +123,7 @@ const Map = ({
                             }
                         }
                         onClick={(event) => {
+                            console.log(event);
                             setMarkerCurrentPosition({
                                 lat:
                                     event.latLng?.lat() || geoLocation.latitude,

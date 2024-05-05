@@ -30,7 +30,6 @@ export default function AlertForm({
     ) => void;
     address: string;
     setAddress: React.Dispatch<React.SetStateAction<string>>;
-    selectedLocation: LocationType;
     setSelectedLocation: React.Dispatch<React.SetStateAction<LocationType>>;
     submitAlertDetails: (event: FormEvent<HTMLFormElement>) => void;
 }) {
@@ -157,8 +156,8 @@ export default function AlertForm({
                         <Input
                             label="Time of Requirement"
                             crossOrigin={"origin"}
-                            name="timeOfRequirement"
-                            value={alertDetails.timeOfRequirement}
+                            name="expiryTime"
+                            value={alertDetails.expiryTime}
                             onChange={onChangeHandler}
                             required
                             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
