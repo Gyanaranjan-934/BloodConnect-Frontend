@@ -1,5 +1,4 @@
 import React from "react";
-import { DashboardContext } from "../DashboardContext";
 import {
     Avatar,
     Button,
@@ -10,12 +9,11 @@ import {
 import moment from "moment";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AuthContext } from "../../../context/auth/AuthContext";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 import DashboardHeader from "./DashboardHeader";
-import BloodReport from "./BloodReport";
+import BloodReport from "../../auth/components/BloodReport";
 import { IndividualDashboardType } from "../types";
+import { getUserDashboard } from "../services";
 
 const TABLE_HEAD = ["Date", "Units"];
 
@@ -40,37 +38,26 @@ const TABLE_ROWS = [
 
 const IndividualDashboard = () => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
-    const { getUserDashboard } = React.useContext(DashboardContext);
+
     const [editEnabled, enableEdit] = React.useState(false);
-    const { setLoadingValue } = React.useContext(AuthContext);
-    const queryClient = useQueryClient();
-    const { data, isLoading } = useQuery({
+
+    const { data, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: getUserDashboard,
     });
-    const mutation = useMutation({
-        mutationFn: getUserDashboard,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-        },
-        onError: (error) => {
-            toast(error?.message || "Error fetching dashboard", {
-                type: "error",
-            });
-            console.log("Error fetching dashboard:", error);
-        },
-    });
 
-    React.useEffect(() => {
-        setLoadingValue(100);
-        if (!data) {
-            mutation.mutate();
-        }
-    }, []);
+    // React.useEffect(() => {
+    //     if (!data) {
+    //         localStorage.clear();
+    //         window.location.href = "/login";
+    //     }
+    // }, [data]);
 
-    const individualDashboard: IndividualDashboardType = data;
+    const individualDashboard = data as IndividualDashboardType;
+
     const [userDetails, setUserDetails] =
         React.useState<IndividualDashboardType>(individualDashboard);
+
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setUserDetails({ ...userDetails, [name]: value });
@@ -79,8 +66,13 @@ const IndividualDashboard = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
     };
+
     if (isLoading) {
         return <div>Loading...</div>;
+    }
+
+    if (isError) {
+        return <div>Error</div>;
     }
 
     return (
@@ -722,8 +714,14 @@ const IndividualDashboard = () => {
                     </div>
                 </div>
             </div>
-
-            {isAlertPopupOpen && <BloodReport onClose={setIsAlertPopupOpen} />}
+            {isAlertPopupOpen && (
+                <BloodReport
+                    open={isAlertPopupOpen}
+                    userId={individualDashboard._id}
+                    setOpen={setIsAlertPopupOpen}
+                />
+            )}{" "}
+            ``
         </>
     );
 };

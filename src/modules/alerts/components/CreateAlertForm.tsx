@@ -1,6 +1,5 @@
 import React, { ChangeEvent, FormEvent, useContext, useState } from "react";
-import { AuthContext } from "../../../context/auth/AuthContext";
-import { AlertContext } from "../../../context/AlertContext";
+import { AuthContext } from "../../auth/AuthContext";
 import {
     AlertDetailsType,
     InitialAlertDetails,
@@ -10,6 +9,7 @@ import {
 import AlertForm from "./AlertForm";
 import UsersListView from "./UsersListView";
 import { toast } from "react-toastify";
+import { createAlert, sendSelectedDonors } from "../services";
 
 const CreateAlertForm = ({
     onClose,
@@ -27,8 +27,6 @@ const CreateAlertForm = ({
     const [showUsers, setShowUsers] = useState<boolean>(false);
     const [selectedUsers, setSelectedUsers] = useState<NearByUserType[]>([]);
     const [nearByUsers, setNearByUsers] = useState<NearByUserType[]>([]);
-
-    const { createAlert, sendSelectedDonors } = React.useContext(AlertContext);
 
     const onChangeHandler = (
         e: ChangeEvent<

@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react";
-import { AuthContext } from "../context/auth/AuthContext";
+import { AuthContext } from "../modules/auth/AuthContext";
 import PrivateHomePage from "./PrivateHomePage";
 import PublicHomePage from "./PublicHomePage";
 

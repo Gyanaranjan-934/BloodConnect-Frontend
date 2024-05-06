@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router-dom";
-import MainPage from "./pages/MainPage";
-import { AlertProvider } from "./context/AlertContext";
+import MainPage from "./MainPage";
+import { AlertProvider } from "./modules/alerts/AlertContext";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { faBell, fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
-import { AuthContext } from "./context/auth/AuthContext";
+import { AuthContext } from "./modules/auth/AuthContext";
 import React from "react";
 import { Sidebar } from "./components/utils/Sidebar";
 import { Navbar } from "./components/utils/Navbar";

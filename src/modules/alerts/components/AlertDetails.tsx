@@ -18,9 +18,8 @@ import {
     ListItemSuffix,
 } from "@material-tailwind/react";
 import moment from "moment";
-import React from "react";
-import { AlertContext } from "../../../context/AlertContext";
 import { AlertType } from "../utils";
+import { deleteAlertSent, deleteAlertReceived, respondAlert } from "../services";
 const AlertDetails = ({
     alert,
     type,
@@ -28,8 +27,6 @@ const AlertDetails = ({
     alert: AlertType;
     type: "created" | "received";
 }) => {
-    const { deleteAlertSent, deleteAlertReceived, respondAlert } =
-        React.useContext(AlertContext);
     const handleDelete = () => {
         if (type === "created") {
             deleteAlertSent(alert._id);

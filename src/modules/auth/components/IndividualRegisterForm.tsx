@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { ReactElement, useState } from "react";
 import { firebaseApp } from "../../../services/firebase";
 import {
@@ -14,7 +15,6 @@ import {
 } from "@material-tailwind/react";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../../../context/auth/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle,
@@ -24,32 +24,41 @@ import {
     faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import {
-    DefaultIndividual,
-    IndividualUserType,
-    bloodGroups,
+    DefaultIndividualForm,
     checkPasswordStrength,
-    statesOfIndia,
+    validateAdhaarNo,
+    validatePhoneNumber,
 } from "../utils";
 import StepperComponent from "./Stepper";
+import { bloodGroups, statesOfIndia } from "../constants";
+import { IndividualFormType } from "../types";
+import { registerIndividual } from "../services";
 
 export const RegistrationFormComponent = (): ReactElement => {
     const [individualDetails, setIndividualDetails] =
-        React.useState<IndividualUserType>(DefaultIndividual);
+        React.useState<IndividualFormType>(DefaultIndividualForm);
+
     const [userDOB, setUserDOB] = useState<string>("");
+
     const [bloodGroup, setBloodGroup] = useState<string>("");
+
     const [showPassword, setShowPassword] = useState<boolean>(false);
+
     const [passwordStrength, setPasswordStrength] = useState<"Strong" | "Weak">(
         "Weak"
     );
+
     const [passwordMatch, setPasswordMatch] = useState<boolean>(false);
+
     const [phoneError, setPhoneError] = useState<boolean>(true);
+
     const [adhaarError, setAdhaarError] = useState<boolean>(true);
+
     const [isAddressSame, setSameAddress] = useState<boolean>(false);
-    const { registerIndividual, setLoadingValue } =
-        React.useContext(AuthContext);
 
     const formHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
+
         setIndividualDetails({ ...individualDetails, [name]: value });
 
         if (name === "password") {
@@ -62,39 +71,26 @@ export const RegistrationFormComponent = (): ReactElement => {
         }
 
         if (name === "confirmPassword") {
-            if (
+            setPasswordMatch(
                 individualDetails.password !== value ||
-                individualDetails.password === ""
-            ) {
-                setPasswordMatch(false);
-            } else {
-                setPasswordMatch(true);
-            }
+                    individualDetails.password === ""
+                    ? false
+                    : true
+            );
         }
 
         // Additional validation for phone and adhaar
         if (name === "phone") {
-            const isValidNumber = /^\d{10}$/g.test(value);
-            if (!isValidNumber) {
-                setPhoneError(true);
-            } else {
-                setPhoneError(false);
-            }
+            setPhoneError(!validatePhoneNumber(value));
         }
 
         if (name === "adhaar") {
-            const isValidNumber = /^\d{12}$/g.test(value);
-            if (!isValidNumber) {
-                setAdhaarError(true);
-            } else {
-                setAdhaarError(false);
-            }
+            setAdhaarError(!validateAdhaarNo(value));
         }
     };
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            setLoadingValue(10);
             if (isAddressSame) {
                 setIndividualDetails({
                     ...individualDetails,
@@ -106,38 +102,31 @@ export const RegistrationFormComponent = (): ReactElement => {
                     },
                 });
             }
-            // await registerIndividual({...individualDetails,userDOB,avatar,bloodGroup});
             const auth = getAuth(firebaseApp);
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 individualDetails.email,
                 individualDetails.password
             );
-            setLoadingValue(50);
             if (userCredential.user) {
                 await sendEmailVerification(userCredential.user);
                 toast(
                     "An email has been sent to your provided email address, please verify this email to continue to login.",
                     {
                         type: "info",
-                        position: "top-right",
                     }
                 );
-                setLoadingValue(70);
-                await registerIndividual({
+                setIndividualDetails({
                     ...individualDetails,
-                    userDOB,
+                    dateOfBirth: userDOB,
                     bloodGroup,
                 });
-                setLoadingValue(100);
+                await registerIndividual(individualDetails);
                 <Navigate to={"/login"} />;
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
-        } finally {
-            setLoadingValue(0);
         }
     };
     const [activeStep, setActiveStep] = React.useState(0);
@@ -204,17 +193,17 @@ export const RegistrationFormComponent = (): ReactElement => {
                                     }
                                 />
                                 <Typography
-                                placeholder={""}
-                                variant="small"
-                                className={`mt-2 flex items-center gap-1 font-normal ${passwordStrength === "Weak" ? "text-red-500" : "text-green-500"}`}
-                            >
-                                <FontAwesomeIcon icon={faInfoCircle} />
-                                {!individualDetails.password
-                                    ? "Password Cannot be empty"
-                                    : passwordStrength === "Weak"
-                                      ? "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
-                                      : "Strong Password"}
-                            </Typography>
+                                    placeholder={""}
+                                    variant="small"
+                                    className={`mt-2 flex items-center gap-1 font-normal ${passwordStrength === "Weak" ? "text-red-500" : "text-green-500"}`}
+                                >
+                                    <FontAwesomeIcon icon={faInfoCircle} />
+                                    {!individualDetails.password
+                                        ? "Password Cannot be empty"
+                                        : passwordStrength === "Weak"
+                                          ? "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+                                          : "Strong Password"}
+                                </Typography>
                             </div>
                             <div>
                                 <Input
@@ -558,7 +547,9 @@ export const RegistrationFormComponent = (): ReactElement => {
                                                 ...individualDetails,
                                                 permanentAddress: {
                                                     ...individualDetails.permanentAddress,
-                                                    pincode: Number(event.target.value),
+                                                    pincode: Number(
+                                                        event.target.value
+                                                    ),
                                                 },
                                             });
                                         }}
@@ -567,7 +558,7 @@ export const RegistrationFormComponent = (): ReactElement => {
                             </div>
                         </div>
                     )}
-                    <StepperComponent 
+                    <StepperComponent
                         activeStep={activeStep}
                         isLastStep={isLastStep}
                         isFirstStep={isFirstStep}

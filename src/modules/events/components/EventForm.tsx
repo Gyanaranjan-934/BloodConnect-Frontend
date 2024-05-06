@@ -16,10 +16,10 @@ import {
 import React from "react";
 import { Link } from "react-router-dom";
 import MapWithAutocomplete from "../../../components/utils/Map";
-import { AuthContext } from "../../../context/auth/AuthContext";
+import { AuthContext } from "../../auth/AuthContext";
 import { EventInputType } from "../utils";
-import { EventContext } from "../EventContext";
 import { DoctorDetailsType } from "../../auth/utils";
+import { getDoctors, createEvent } from "../services";
 
 const EventForm = ({
     onClose,
@@ -54,7 +54,6 @@ const EventForm = ({
     const [eventStartDate, setEventStartDate] = React.useState<string>("");
     const [eventEndDate, setEventEndDate] = React.useState<string>("");
     const [doctorSearchQuery, setDoctorSearchQuery] = React.useState("");
-    const { createEvent, getDoctors } = React.useContext(EventContext);
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (

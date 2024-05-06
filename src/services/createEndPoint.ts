@@ -31,4 +31,7 @@ export default {
     showEventsOrganization: (): string => "/event/get-events",
     showRegisteredEventsIndividual: (): string => "/event/get-registered-events",
     registerForEventByIndividual: (): string => "/event/register-by-self",
+    registerForEventByDoctor: (): string => "/event/register-by-doctor",
+    getEventsOfDoctor: (): string => "/event/get-events-of-doctor",
+    getEventDetails: (): string => "/event/get-event-details",
 };

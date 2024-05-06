@@ -13,7 +13,7 @@ import React, {
     useEffect,
     useState,
 } from "react";
-import { AuthContext } from "../../context/auth/AuthContext";
+import { AuthContext } from "../../modules/auth/AuthContext";
 import { Input } from "@material-tailwind/react";
 import { LocationType } from "../../modules/alerts/utils";
 

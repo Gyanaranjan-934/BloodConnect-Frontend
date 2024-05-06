@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { AuthContext } from "../../../context/auth/AuthContext";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import {
@@ -18,18 +17,27 @@ import {
     faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { DefaultDoctor, DoctorType, checkPasswordStrength } from "../utils";
+import {
+    DefaultDoctor,
+    checkPasswordStrength,
+    validatePhoneNumber,
+} from "../utils";
+import { DoctorType } from "../types";
+import { registerDoctor } from "../services";
 
 const DoctorRegisterForm = () => {
     const [doctorDetails, setDoctorDetails] =
         useState<DoctorType>(DefaultDoctor);
+
     const [showPassword, setShowPassword] = useState<boolean>(false);
+
     const [passwordStrength, setPasswordStrength] = useState<"Strong" | "Weak">(
         "Weak"
     );
+
     const [passwordMatch, setPasswordMatch] = useState<boolean>(false);
+
     const [phoneError, setPhoneError] = useState<boolean>(true);
-    const { registerDoctor, setLoadingValue } = React.useContext(AuthContext);
 
     const formHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -57,26 +65,17 @@ const DoctorRegisterForm = () => {
 
         // Additional validation for phone and adhaar
         if (name === "phone") {
-            const isValidNumber = /^\d{10}$/g.test(value);
-            if (!isValidNumber) {
-                setPhoneError(true);
-            } else {
-                setPhoneError(false);
-            }
+            setPhoneError(!validatePhoneNumber(value));
         }
     };
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            setLoadingValue(10);
             await registerDoctor(doctorDetails);
             <Navigate to={"/login"} />;
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
-        } finally {
-            setLoadingValue(100);
-            setLoadingValue(0);
         }
     };
 
@@ -240,7 +239,8 @@ const DoctorRegisterForm = () => {
                                 placeholder={""}
                                 variant="small"
                                 className={`mt-2 flex items-center gap-1 font-normal ${
-                                    !passwordMatch || !doctorDetails.confirmPassword
+                                    !passwordMatch ||
+                                    !doctorDetails.confirmPassword
                                         ? "text-red-500"
                                         : "text-green-500"
                                 }`}
@@ -252,7 +252,7 @@ const DoctorRegisterForm = () => {
                                             : faTimesCircle
                                     }
                                 />
-                                {passwordMatch && doctorDetails.confirmPassword 
+                                {passwordMatch && doctorDetails.confirmPassword
                                     ? "Password Matched"
                                     : "Password not matching"}
                             </Typography>

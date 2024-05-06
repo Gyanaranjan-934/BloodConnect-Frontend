@@ -17,7 +17,7 @@ import {
     PowerIcon,
 } from "@heroicons/react/24/solid";
 import { Link, Navigate } from "react-router-dom";
-import { AuthContext } from "../../context/auth/AuthContext";
+import { AuthContext } from "../../modules/auth/AuthContext";
 
 // profile menu component
 const profileMenuItems = [

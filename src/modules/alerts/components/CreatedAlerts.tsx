@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
-import { AlertContext } from "../../../context/AlertContext";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, List } from "@material-tailwind/react";
 import AlertDetails from "./AlertDetails";
+import { getAlerts } from "../services";
 
 const CreatedAlerts = () => {
-    const { getAlerts } = React.useContext(AlertContext);
     const { data, isLoading, isError } = useQuery({
         queryKey: ["createdAlerts"],
         queryFn: getAlerts,

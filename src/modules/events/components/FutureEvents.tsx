@@ -1,12 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
-import { EventContext } from "../EventContext";
 import { EventType } from "../utils";
 import { Card, List } from "@material-tailwind/react";
 import IndividualEventListItem from "./IndividualEventListItem";
+import { showUpcomingEventsToIndividual } from "../services";
 
 export default function FutureEvents() {
-    const { showUpcomingEventsToIndividual } = React.useContext(EventContext);
     const { data } = useQuery({
         queryKey: ["upcomingEvents"],
         queryFn: showUpcomingEventsToIndividual,

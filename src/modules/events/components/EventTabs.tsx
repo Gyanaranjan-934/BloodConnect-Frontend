@@ -10,11 +10,11 @@ import FutureEventsOrg from "./FutureEventsOrg";
 import PastEvents from "./PastEvents";
 import RegisteredEvents from "./RegisteredEvents";
 import React from "react";
-import { AuthContext } from "../../../context/auth/AuthContext";
+import { AuthContext } from "../../auth/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { EventType } from "../utils";
-import { EventContext } from "../EventContext";
 import FutureEvents from "./FutureEvents";
+import { getEventsOfOrganization } from "../services";
 
 const OrganizationTabList = [
     {
@@ -49,7 +49,6 @@ const IndividualTabList = [
 
 function EventTabs() {
     const { loggedInUserType } = React.useContext(AuthContext);
-    const { getEventsOfOrganization } = React.useContext(EventContext);
     const { data } = useQuery({
         queryKey: ["upcomingEvents"],
         queryFn:

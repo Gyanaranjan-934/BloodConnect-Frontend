@@ -1,20 +1,23 @@
-import React from 'react'
-import { DashboardContext } from '../DashboardContext';
-
+import { getUserDashboard } from "../services";
+import { OrganizationDashboardType } from "../types";
+import { useQuery } from "@tanstack/react-query";
 const OrganizationDashboard = () => {
-  const {getUserDashboard} = React.useContext(DashboardContext)
-  const [userDashboard,setUserDashboard] = React.useState<unknown>(null)
-  React.useEffect(() => {
-    const getUserDashboardFunc = async () => {
-      const userData = await getUserDashboard();
-      console.log(userData);
-      setUserDashboard(userData)
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["dashboard"],
+        queryFn: getUserDashboard,
+    });
+    if (isLoading) {
+        return <div>Loading...</div>;
     }
-    getUserDashboardFunc()
-  }, []);
-  return (
-    <div>OrganizationDashboard{JSON.stringify(userDashboard)}</div>
-  )
-}
 
-export default OrganizationDashboard
+    if (isError) {
+        return <div>Error</div>;
+    }
+
+    const organizationDashboard = data as OrganizationDashboardType;
+    return (
+        <div>OrganizationDashboard{JSON.stringify(organizationDashboard)}</div>
+    );
+};
+
+export default OrganizationDashboard;

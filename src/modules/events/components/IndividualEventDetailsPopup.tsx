@@ -7,7 +7,7 @@ import {
 } from "@material-tailwind/react";
 import React from "react";
 import { EventType } from "../utils";
-import { EventContext } from "../EventContext";
+import { registerForEventByIndividual } from "../services";
 
 export default function IndividualEventDetailsPopup({
     open,
@@ -19,7 +19,6 @@ export default function IndividualEventDetailsPopup({
     event: EventType;
 }) {
     const handleOpen = () => setOpen(!open);
-    const { registerForEventByIndividual } = React.useContext(EventContext);
     const handleRegister = async() => {
         await registerForEventByIndividual(event._id);
     };

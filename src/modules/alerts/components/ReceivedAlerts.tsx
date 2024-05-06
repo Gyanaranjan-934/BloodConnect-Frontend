@@ -1,12 +1,10 @@
-import React from "react";
-import { AlertContext } from "../../../context/AlertContext";
 import { useQuery } from "@tanstack/react-query";
 import { Card, List } from "@material-tailwind/react";
 import AlertDetails from "./AlertDetails";
 import { AlertType } from "../utils";
+import { getReceivedAlerts } from "../services";
 
 const ReceivedAlerts = () => {
-    const { getReceivedAlerts } = React.useContext(AlertContext);
     const { data } = useQuery({
         queryKey: ["receivedAlerts"],
         queryFn: getReceivedAlerts,

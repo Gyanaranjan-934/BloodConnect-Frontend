@@ -6,7 +6,7 @@ import {
     Collapse,
 } from "@material-tailwind/react";
 import { Link, NavLink } from "react-router-dom";
-import { AuthContext } from "../../context/auth/AuthContext";
+import { AuthContext } from "../../modules/auth/AuthContext";
 import { Progress } from "@material-tailwind/react";
 
 export function Navbar() {

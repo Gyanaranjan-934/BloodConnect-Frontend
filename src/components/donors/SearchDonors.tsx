@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from "react";
-import { AuthContext } from "../../context/auth/AuthContext";
+import { AuthContext } from "../../modules/auth/AuthContext";
 import MapWithAutocomplete from "../utils/Map";
 import { Button } from "@material-tailwind/react";
-import { AlertContext } from "../../context/AlertContext";
+import { AlertContext } from "../../modules/alerts/AlertContext";
 
 const SearchDonors = ({
     onClose,

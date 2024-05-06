@@ -1,5 +1,5 @@
 import React from "react";
-import { AuthContext } from "../../context/auth/AuthContext";
+import { AuthContext } from "../auth/AuthContext";
 import IndividualDashboard from "./components/IndividualDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import OrganizationDashboard from "./components/OrganizationDashboard";

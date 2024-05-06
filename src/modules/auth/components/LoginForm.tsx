@@ -6,48 +6,35 @@ import {
 } from "firebase/auth";
 import React, { ReactElement } from "react";
 import { firebaseApp } from "../../../services/firebase";
-import { AuthContext } from "../../../context/auth/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../AuthContext";
+import { Link } from "react-router-dom";
 import { Button, Input, Option, Select } from "@material-tailwind/react";
 import { toast } from "react-toastify";
-
-type LoginType = "individual" | "organization" | "admin" | "doctor";
-
-const LoginOptions: { label: string; value: LoginType }[] = [
-    {
-        label: "Individual",
-        value: "individual",
-    },
-    {
-        label: "Organization",
-        value: "organization",
-    },
-    {
-        label: "Admin",
-        value: "admin",
-    },
-    {
-        label: "Doctor",
-        value: "doctor",
-    },
-];
+import { loginUser } from "../services";
+import { LoginFormType } from "../types";
+import { loginTypes } from "../constants";
 
 const LoginFormComponent = (): ReactElement => {
-    const [userDetails, setUserDetails] = React.useState({
+    const [userDetails, setUserDetails] = React.useState<LoginFormType>({
         email: "",
         password: "",
+        userType: "individual",
     });
-    const { setIsAuthenticated } = React.useContext(AuthContext);
-    const [loginType, setLoginType] = React.useState<LoginType>("individual");
-    const navigate = useNavigate();
-    const { loginUser } = React.useContext(AuthContext);
+
+    const {
+        setIsAuthenticated,
+        geoLocation,
+        setLoggedInUserType,
+        setLoggedInUser,
+    } = React.useContext(AuthContext);
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log(userDetails);
-        if (loginType === "individual" || loginType === "organization") {
+        if (
+            userDetails.userType === "individual" ||
+            userDetails.userType === "organization"
+        ) {
             try {
-                const response = await loginUser(userDetails,loginType)
-                console.log(response);
                 const auth = getAuth(firebaseApp);
                 const loggedInUser = await signInWithEmailAndPassword(
                     auth,
@@ -57,7 +44,6 @@ const LoginFormComponent = (): ReactElement => {
                 if (!loggedInUser) {
                     toast("Email or password is incorrect", { type: "error" });
                 }
-
                 if (!loggedInUser.user.emailVerified) {
                     await sendEmailVerification(loggedInUser.user);
                     toast(
@@ -67,31 +53,43 @@ const LoginFormComponent = (): ReactElement => {
                         }
                     );
                 } else {
-                    // store the data in mongodb
-                    const resoponse = await loginUser(userDetails, loginType);
-                    console.log(resoponse);
-
-                    if (resoponse) {
+                    const response = await loginUser(userDetails, geoLocation);
+                    if (response.success) {
                         setIsAuthenticated(true);
+                        setLoggedInUserType(userDetails.userType);
+                        setLoggedInUser(response.userData);
                         localStorage.setItem(
-                            `${loginType}FirebaseToken`,
+                            `${userDetails.userType}FirebaseToken`,
                             loggedInUser.user.refreshToken
                         );
                         toast("Login successful", { type: "success" });
-                        navigate("/dashboard");
+                        window.location.href = "/dashboard";
                     } else {
                         toast("Some error occured", { type: "error" });
                     }
                 }
-            } catch (error:any) {
+            } catch (error: any) {
                 console.error(error);
                 toast(error?.message || "An error occured", { type: "error" });
             }
-        } else if (loginType === "admin" || loginType === "doctor") {
+        } else if (
+            userDetails.userType === "admin" ||
+            userDetails.userType === "doctor"
+        ) {
             try {
-                await loginUser(userDetails, loginType);
+                const response = await loginUser(userDetails);
+                if (response.success) {
+                    setIsAuthenticated(true);
+                    setLoggedInUserType(userDetails.userType);
+                    setLoggedInUser(response.userData);
+                    toast("Login successful", { type: "success" });
+                    window.location.href = "/dashboard";
+                } else {
+                    toast("Some error occured", { type: "error" });
+                }
             } catch (error) {
                 console.log(error);
+                toast("An error occured", { type: "error" });
             }
         }
     };
@@ -151,17 +149,24 @@ const LoginFormComponent = (): ReactElement => {
                                     <Select
                                         label="Login As"
                                         placeholder="Login Type"
-                                        value={loginType.charAt(0).toUpperCase().concat(loginType.slice(1))}
+                                        value={userDetails.userType}
+                                        onChange={(e) =>
+                                            setUserDetails({
+                                                ...userDetails,
+                                                userType: e as
+                                                    | "individual"
+                                                    | "organization"
+                                                    | "doctor"
+                                                    | "admin",
+                                            })
+                                        }
                                     >
-                                        {LoginOptions.map((option) => (
-                                            <Option
-                                                key={option.value}
-                                                value={option.value}
-                                                onClick={() =>
-                                                    setLoginType(option.value)
-                                                }
-                                            >
-                                                {option.label}
+                                        {loginTypes.map((option) => (
+                                            <Option key={option} value={option}>
+                                                {option
+                                                    .charAt(0)
+                                                    .toUpperCase()
+                                                    .concat(option.slice(1))}
                                             </Option>
                                         ))}
                                     </Select>
@@ -170,7 +175,7 @@ const LoginFormComponent = (): ReactElement => {
                                     variant="gradient"
                                     size="sm"
                                     className="w-full"
-                                    placeholder={undefined}
+                                    placeholder={""}
                                     type="submit"
                                 >
                                     Signin

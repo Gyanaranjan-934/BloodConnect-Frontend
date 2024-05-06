@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { AuthContext } from "../../../context/auth/AuthContext";
 import {
     createUserWithEmailAndPassword,
     getAuth,
@@ -18,13 +17,11 @@ import {
     faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    OrganizationType,
-    DefaultOrganization,
-    checkPasswordStrength,
-    statesOfIndia,
-} from "../utils";
+import { DefaultOrganization, checkPasswordStrength, validateAdhaarNo, validatePhoneNumber } from "../utils";
 import StepperComponent from "./Stepper";
+import { organizationTypes, statesOfIndia } from "../constants";
+import { OrganizationType } from "../types";
+import { registerOrganization } from "../services";
 
 export function OrganizationRegisterForm() {
     const [activeStep, setActiveStep] = React.useState(0);
@@ -32,29 +29,35 @@ export function OrganizationRegisterForm() {
     const [isFirstStep, setIsFirstStep] = React.useState(false);
     const handleNext = () => !isLastStep && setActiveStep((cur) => cur + 1);
     const handlePrev = () => !isFirstStep && setActiveStep((cur) => cur - 1);
+
     const [organizationDetails, setOrganizationDetails] =
         React.useState<OrganizationType>(DefaultOrganization);
+
     const [cinError, setCINError] = useState<boolean>(true);
+
     const [phoneError, setPhoneError] = useState<boolean>(true);
+
     const [showPassword, setShowPassword] = useState<boolean>(false);
+
     const [passwordStrength, setPasswordStrength] = useState<"Strong" | "Weak">(
         "Weak"
     );
+
     const [passwordMatch, setPasswordMatch] = useState<boolean>(false);
+
     const [adhaarError, setAdhaarError] = useState<boolean>(true);
-    const { registerOrganization, setLoadingValue } =
-        React.useContext(AuthContext);
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            setLoadingValue(10);
             const auth = getAuth(firebaseApp);
+
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 organizationDetails.email,
                 organizationDetails.password
             );
-            setLoadingValue(50);
+
             if (userCredential.user) {
                 await sendEmailVerification(userCredential.user);
                 toast(
@@ -64,9 +67,9 @@ export function OrganizationRegisterForm() {
                         position: "top-right",
                     }
                 );
-                setLoadingValue(70);
+
                 await registerOrganization(organizationDetails);
-                setLoadingValue(100);
+
                 <Navigate to={"/login"} />;
             }
         } catch (error: any) {
@@ -99,12 +102,7 @@ export function OrganizationRegisterForm() {
         }
 
         if (name === "phone") {
-            const isValidNumber = /^\d{10}$/g.test(value);
-            if (!isValidNumber) {
-                setPhoneError(true);
-            } else {
-                setPhoneError(false);
-            }
+            setPhoneError(!validatePhoneNumber(value));
         }
 
         if (name === "cinNo") {
@@ -119,12 +117,7 @@ export function OrganizationRegisterForm() {
         }
 
         if (name === "organizationHeadAdhaar") {
-            const isValidNumber = /^\d{12}$/g.test(value);
-            if (!isValidNumber) {
-                setAdhaarError(true);
-            } else {
-                setAdhaarError(false);
-            }
+            setAdhaarError(!validateAdhaarNo(value));
         }
     };
     return (
@@ -289,10 +282,14 @@ export function OrganizationRegisterForm() {
                                 })
                             }
                         >
-                            <Option value="healthcare">Healthcare</Option>
-                            <Option value="educational">Educational</Option>
-                            <Option value="charity">Charity</Option>
-                            <Option value="other">Other</Option>
+                            {organizationTypes.map((option) => (
+                                <Option key={option} value={option}>
+                                    {option
+                                        .charAt(0)
+                                        .toUpperCase()
+                                        .concat(option.slice(1))}
+                                </Option>
+                            ))}
                         </Select>
 
                         <div>
