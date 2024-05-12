@@ -7,14 +7,23 @@ import {
 import React, { ReactElement } from "react";
 import { firebaseApp } from "../../../services/firebase";
 import { AuthContext } from "../AuthContext";
-import { Link } from "react-router-dom";
 import { Button, Input, Option, Select } from "@material-tailwind/react";
 import { toast } from "react-toastify";
 import { loginUser } from "../services";
 import { LoginFormType } from "../types";
 import { loginTypes } from "../constants";
+import { Navigate, useNavigate } from "react-router-dom";
 
-const LoginFormComponent = (): ReactElement => {
+const LoginFormComponent = ({
+    openRegisterForm,
+    openLoginForm,
+    openAuthPopup,
+}: {
+    openRegisterForm: React.Dispatch<React.SetStateAction<boolean>>;
+    openLoginForm: React.Dispatch<React.SetStateAction<boolean>>;
+    openAuthPopup: React.Dispatch<React.SetStateAction<boolean>>;
+}): ReactElement => {
+    const navigate = useNavigate();
     const [userDetails, setUserDetails] = React.useState<LoginFormType>({
         email: "",
         password: "",
@@ -62,15 +71,19 @@ const LoginFormComponent = (): ReactElement => {
                             `${userDetails.userType}FirebaseToken`,
                             loggedInUser.user.refreshToken
                         );
-                        toast("Login successful", { type: "success" });
-                        window.location.href = "/dashboard";
+                        toast.success("Login successful");
+                        openAuthPopup(false);
+                        openLoginForm(false);
+                        openRegisterForm(false);
+                        navigate("/dashboard");
+                        // window.location.href = "/dashboard";
                     } else {
-                        toast("Some error occured", { type: "error" });
+                        toast.error("Some error occured");
                     }
                 }
             } catch (error: any) {
                 console.error(error);
-                toast(error?.message || "An error occured", { type: "error" });
+                toast.error(error?.message || "An error occured");
             }
         } else if (
             userDetails.userType === "admin" ||
@@ -83,7 +96,10 @@ const LoginFormComponent = (): ReactElement => {
                     setLoggedInUserType(userDetails.userType);
                     setLoggedInUser(response.userData);
                     toast("Login successful", { type: "success" });
-                    window.location.href = "/dashboard";
+                    openAuthPopup(false);
+                    openLoginForm(false);
+                    openRegisterForm(false);
+                    <Navigate to={"/dashboard"} />;
                 } else {
                     toast("Some error occured", { type: "error" });
                 }
@@ -95,7 +111,7 @@ const LoginFormComponent = (): ReactElement => {
     };
     return (
         <>
-            <div className="w-[50%] h-full flex justify-center items-center">
+            <div className="w-full h-full flex justify-center items-center">
                 <div className="m-2 px-8 py-20">
                     <div className="flex flex-col px-10 py-14 gap-y-10 shadow rounded">
                         {/* Header */}
@@ -105,11 +121,15 @@ const LoginFormComponent = (): ReactElement => {
                             </h1>
                             <p className="text-sm tracking-wide text-gray-600 dark:text-gray-300">
                                 Don't have an account ?{" "}
-                                <Link to={"/register"}>
-                                    <span className="text-blue-600 transition duration-200 hover:underline dark:text-blue-400">
-                                        Signup
-                                    </span>
-                                </Link>{" "}
+                                <span
+                                    onClick={() => {
+                                        openRegisterForm(true);
+                                        openLoginForm(false);
+                                    }}
+                                    className="text-blue-600 transition duration-200 hover:underline dark:text-blue-400"
+                                >
+                                    Signup
+                                </span>{" "}
                                 for free
                             </p>
                         </div>
@@ -122,6 +142,8 @@ const LoginFormComponent = (): ReactElement => {
                                     name="email"
                                     id="email"
                                     placeholder="Your Email"
+                                    title="Email"
+                                    label="Email"
                                     value={userDetails.email}
                                     onChange={(e) =>
                                         setUserDetails({
@@ -135,6 +157,8 @@ const LoginFormComponent = (): ReactElement => {
                                     type="password"
                                     name="password"
                                     id="password"
+                                    title="Password"
+                                    label="Password"
                                     placeholder="Your Password"
                                     value={userDetails.password}
                                     onChange={(e) =>

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { EventType } from "../utils";
 import { Card, List } from "@material-tailwind/react";
+import { getRegisteredEventsToIndividual } from "../../services";
+import { EventType } from "../../utils";
 import IndividualEventListItem from "./IndividualEventListItem";
-import { getRegisteredEventsToIndividual } from "../services";
 
 export default function RegisteredEvents() {
     const { data } = useQuery({

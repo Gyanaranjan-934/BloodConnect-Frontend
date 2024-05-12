@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { EventType } from "../utils";
+import { EventType } from "../../utils";
 import { Card, List } from "@material-tailwind/react";
 import IndividualEventListItem from "./IndividualEventListItem";
-import { showUpcomingEventsToIndividual } from "../services";
+import { showUpcomingEventsToIndividual } from "../../services";
 
 export default function FutureEvents() {
     const { data } = useQuery({

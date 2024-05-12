@@ -1,15 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, List } from "@material-tailwind/react";
 import AlertDetails from "./AlertDetails";
-import { AlertType } from "../utils";
+import { ReceivedAlertType } from "../utils";
 import { getReceivedAlerts } from "../services";
+import ProgressBar from "../../../components/utils/ProgressBar";
+import ErrorPage from "../../../components/utils/ErrorPage";
 
 const ReceivedAlerts = () => {
-    const { data } = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ["receivedAlerts"],
         queryFn: getReceivedAlerts,
     });
-    const receivedAlerts: AlertType[] = data as AlertType[];
+    console.log(data);
+    if (isLoading) {
+        return <ProgressBar/>;
+    }
+
+    if (isError) {
+        return <ErrorPage/>;
+    }
+    const receivedAlerts = data as ReceivedAlertType[];
     return (
         <div>
             <Card className="w-full h-screen max-h-screen overflow-y-auto" placeholder={""}>
@@ -18,10 +28,10 @@ const ReceivedAlerts = () => {
                         placeholder={""}
                         className="max-h-screen overflow-y-auto no-scrollbar"
                     >
-                        {receivedAlerts?.map((alert: AlertType) => (
+                        {receivedAlerts?.map((alert: ReceivedAlertType) => (
                             <AlertDetails
                                 key={alert._id}
-                                alert={alert}
+                                alertData={alert}
                                 type="received"
                             />
                         ))}

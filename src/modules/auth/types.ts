@@ -28,10 +28,19 @@ export type IndividualFormType = {
     };
 };
 
-export type DoctorType = {
-    fullName: string;
+export type IndividualRegisterFormType = {
+    name: string;
     email: string;
-    phoneNo: string;
+    password: string;
+    confirmPassword: string;
+    bloodGroup: string;
+    currentLocation?: LocationType;
+}
+
+export type DoctorType = {
+    name: string;
+    email: string;
+    phone: string;
     gender: "male" | "female" | "others";
     dateOfBirth: string;
     doctorId: string;
@@ -42,12 +51,12 @@ export type DoctorType = {
 export type OrganizationType = {
     name: string;
     email: string;
-    phoneNo: string;
+    phone: string;
     address: {
         street: string;
         city: string;
         state: string;
-        pincode: number;
+        pincode: string;
     };
     organizationHeadName: string;
     organizationHeadAdhaar: string;
@@ -64,12 +73,12 @@ export type OrganizationType = {
 export type DoctorDetailsType = {
     _id: string;
     email: string;
-    fullName: string;
+    name: string;
     doctorId: string;
     gender: string;
     dateOfBirth: string;
     avatar: string;
-    phoneNo: string;
+    phone: string;
     attendedCamps: any[];
     isVerified: boolean;
     createdAt: string;
@@ -92,6 +101,7 @@ export type LoginResposneType = {
 };
 
 export type BloodReportType = {
+    bloodUnits: string,
     bloodPressure: string;
     weight: string;
     height: string;

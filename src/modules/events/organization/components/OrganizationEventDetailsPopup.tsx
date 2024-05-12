@@ -6,10 +6,9 @@ import {
     DialogFooter,
 } from "@material-tailwind/react";
 import React from "react";
-import { EventType } from "../utils";
-import { registerForEventByIndividual } from "../services";
+import { EventType } from "../../utils";
 
-export default function IndividualEventDetailsPopup({
+export default function OrganizationEventDetailsPopup({
     open,
     setOpen,
     event,
@@ -19,9 +18,7 @@ export default function IndividualEventDetailsPopup({
     event: EventType;
 }) {
     const handleOpen = () => setOpen(!open);
-    const handleRegister = async() => {
-        await registerForEventByIndividual(event._id);
-    };
+
     return (
         <>
             <Dialog
@@ -55,7 +52,7 @@ export default function IndividualEventDetailsPopup({
                         placeholder={""}
                         variant="gradient"
                         color="green"
-                        onClick={handleRegister}
+                        onClick={handleOpen}
                     >
                         <span>Confirm</span>
                     </Button>

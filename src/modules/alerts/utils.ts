@@ -1,4 +1,4 @@
-export type NearByUserType = {
+export type NearbyDonorType = {
     _id: string;
     email: string;
     fullName?: string;
@@ -75,6 +75,49 @@ export type AlertType  = {
         longitude: number;
     };
     __v: number;
+}
+
+export type ReceivedAlertType = {
+    _id: string;
+    senderId: string;
+    status: {
+        invitationAccepted: boolean;
+        isResponded: boolean;
+    };
+    patientName: string;
+    problemDescription: string;
+    age: number;
+    gender: string;
+    bloodGroup: string;
+    dateOfRequirement: string;
+    expiryTime: string;
+    address: string;
+    patientPhoto: string;
+    isSendToRecipients: boolean;
+    createdAt: string;
+    updatedAt: string;
+    coordinates: {
+        type: "Point";
+        coordinates: [number, number];
+    };
+    __v: number;
+}
+
+export type NearbyOrganizationType = {
+    _id: string;
+    email: string;
+    name: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        pincode: string;
+    };
+    phone: string;
+    currentLocation: {
+        type: "Point";
+        coordinates: [number, number];
+    }
 }
 
 export const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];

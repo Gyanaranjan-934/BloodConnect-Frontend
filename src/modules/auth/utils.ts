@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DoctorType, IndividualFormType, OrganizationType, BloodReportType } from "./types";
+import { DoctorType, IndividualFormType, OrganizationType, BloodReportType, IndividualRegisterFormType } from "./types";
 
 
 export const DefaultIndividualForm: IndividualFormType = {
@@ -27,9 +27,9 @@ export const DefaultIndividualForm: IndividualFormType = {
 
 
 export const DefaultDoctor: DoctorType = {
-    fullName: "",
+    name: "",
     email: "",
-    phoneNo: "",
+    phone: "",
     gender: "male",
     dateOfBirth: "",
     doctorId: "",
@@ -41,12 +41,12 @@ export const DefaultDoctor: DoctorType = {
 export const DefaultOrganization: OrganizationType = {
     name: "",
     email: "",
-    phoneNo: "",
+    phone: "",
     address: {
         street: "",
         city: "",
         state: "",
-        pincode: 0,
+        pincode: "",
     },
     organizationHeadName: "",
     organizationHeadAdhaar: "",
@@ -63,6 +63,15 @@ export const DefaultBloodReportDetails: BloodReportType = {
     bloodSugar: "",
     hemoglobin: "",
     heartRate: "",
+    bloodUnits: "",
+};
+
+export const DefaultIndividualRegisterForm: IndividualRegisterFormType = {
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    bloodGroup: "",
 };
 
 export const checkPasswordStrength = (
@@ -84,7 +93,7 @@ export const validatePhoneNumber = (phoneNumber: string) => {
 };
 
 export const validateAdhaarNo = (adhaarNo: string) => {
-    const adhaarRegex = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/;
+    const adhaarRegex = /^\d{12}$/;
     return adhaarRegex.test(adhaarNo);
 };
 

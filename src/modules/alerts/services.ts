@@ -1,27 +1,57 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { toast } from "react-toastify";
 import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
 import {
     AlertDetailsType,
     LocationType,
-    NearByUserType,
+    NearbyDonorType,
     AlertType,
+    ReceivedAlertType,
+    NearbyOrganizationType,
 } from "./utils";
 
-const accessToken = localStorage.getItem("accessToken");
-const loginType = localStorage.getItem("loginType");
-const config = {
-    headers: {
-        Authorization: `Bearer ${accessToken}`,
-        userType: loginType,
-    },
+export const getConfig = async (): Promise<any> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    userType: localStorage.getItem("loginType"),
+                },
+            };
+            resolve(config);
+        }, 10);
+    });
+};
+
+export const getAlerts = async (): Promise<AlertType[]> => {
+    try {
+        const config = await getConfig();
+        const createdAlerts = await axiosInstance.get(
+            createEndPoint.getCreatedAlerts(),
+            {
+                headers: config.headers,
+            }
+        );
+        console.log(createdAlerts);
+        return createdAlerts.data.data;
+    } catch (error) {
+        console.log("Error getting alert:", error);
+        return [];
+    }
 };
 
 export const createAlert = async (
     alertDetails: AlertDetailsType,
     selectedLocation: LocationType,
-    address: string
-): Promise<NearByUserType[]> => {
-    console.log(selectedLocation, address);
+    address: string,
+    accessToken: string,
+    loggedInUserType: "individual" | "organization"
+): Promise<NearbyDonorType[]> => {
+    if (!accessToken) {
+        console.log(accessToken);
+        return [];
+    }
 
     const formData = new FormData();
 
@@ -43,7 +73,12 @@ export const createAlert = async (
         const { data } = await axiosInstance.post(
             createEndPoint.createAlert(),
             formData,
-            config
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    userType: loggedInUserType,
+                },
+            }
         );
         console.log(data);
         return data.data;
@@ -55,12 +90,13 @@ export const createAlert = async (
 
 export const searchDonors = async (
     currentLocation: LocationType
-): Promise<NearByUserType[]> => {
+): Promise<NearbyOrganizationType[]> => {
     try {
+        const config = await getConfig();
         const createdAlert = await axiosInstance.get(
             createEndPoint.searchDonors(),
             {
-                ...config,
+                headers: config.headers,
                 params: {
                     location: JSON.stringify({
                         longitude: currentLocation.longitude,
@@ -69,49 +105,39 @@ export const searchDonors = async (
                 },
             }
         );
+        console.log(createdAlert);
+        
         return createdAlert.data.data;
     } catch (error) {
-        console.log("Error creating alert:", error);
+        console.log("Error finding donors:", error);
         return [];
     }
 };
 
 export const sendSelectedDonors = async (
-    donors: NearByUserType[]
+    donors: NearbyDonorType[]
 ): Promise<void> => {
     try {
+        const config = await getConfig();
         await axiosInstance.post(
             createEndPoint.sendSelectedDonors(),
             { donorList: donors },
-            config
+            {
+                headers: config.headers,
+            }
         );
     } catch (error) {
         console.log("Error creating alert:", error);
     }
 };
 
-export const getAlerts = async (): Promise<AlertType[]> => {
+export const getReceivedAlerts = async (): Promise<ReceivedAlertType[]> => {
     try {
-        const createdAlerts = await axiosInstance.get(
-            createEndPoint.getCreatedAlerts(),
-            {
-                ...config,
-            }
-        );
-        console.log(createdAlerts);
-        return createdAlerts.data.data;
-    } catch (error) {
-        console.log("Error getting alert:", error);
-        return [];
-    }
-};
-
-export const getReceivedAlerts = async (): Promise<AlertType[]> => {
-    try {
+        const config = await getConfig();
         const createdAlerts = await axiosInstance.get(
             createEndPoint.getReceivedAlerts(),
             {
-                ...config,
+                headers: config.headers,
             }
         );
         console.log(createdAlerts);
@@ -124,9 +150,10 @@ export const getReceivedAlerts = async (): Promise<AlertType[]> => {
 
 export const deleteAlertSent = async (alertId: string): Promise<void> => {
     try {
+        const config = await getConfig();
         const createdAlert = await axiosInstance.delete(
             createEndPoint.deleteAlertSent(),
-            { ...config, params: { alertId } }
+            { headers: config.headers, params: { alertId } }
         );
         console.log(createdAlert);
 
@@ -139,9 +166,10 @@ export const deleteAlertSent = async (alertId: string): Promise<void> => {
 export const deleteAlertReceived = async (alertId: string): Promise<void> => {
     console.log(alertId);
     try {
+        const config = await getConfig();
         const createdAlert = await axiosInstance.delete(
             createEndPoint.deleteAlertReceived(),
-            { ...config, params: { alertId } }
+            { headers: config.headers, params: { alertId } }
         );
         console.log(createdAlert);
 
@@ -156,10 +184,13 @@ export const respondAlert = async (
     isAccepted: boolean
 ): Promise<void> => {
     try {
+        const config = await getConfig();
         const { data } = await axiosInstance.put(
             createEndPoint.respondAlert(),
             { alertId, isAccepted },
-            config
+            {
+                headers: config.headers,
+            }
         );
         if (data.success) {
             if (isAccepted) {

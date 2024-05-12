@@ -1,4 +1,4 @@
-import EventTabs from "./components/EventTabs";
+import EventTabs from "../components/EventTabs";
 
 export default function IndividualEventPage() {
     return (

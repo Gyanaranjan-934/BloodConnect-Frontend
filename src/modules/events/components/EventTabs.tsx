@@ -5,16 +5,16 @@ import {
     TabsBody,
     TabsHeader,
 } from "@material-tailwind/react";
-import CurrentEvent from "./CurrentEvent";
-import FutureEventsOrg from "./FutureEventsOrg";
-import PastEvents from "./PastEvents";
-import RegisteredEvents from "./RegisteredEvents";
+import CurrentEvent from "../organization/components/CurrentEvent";
+import FutureEventsOrg from "../organization/components/FutureEventsOrg";
+import RegisteredEvents from "../individual/components/RegisteredEvents";
 import React from "react";
 import { AuthContext } from "../../auth/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { EventType } from "../utils";
-import FutureEvents from "./FutureEvents";
+import FutureEvents from "../individual/components/FutureEvents";
 import { getEventsOfOrganization } from "../services";
+import PastEvents from "../organization/components/PastEvents";
 
 const OrganizationTabList = [
     {
@@ -50,13 +50,15 @@ const IndividualTabList = [
 function EventTabs() {
     const { loggedInUserType } = React.useContext(AuthContext);
     const { data } = useQuery({
-        queryKey: ["upcomingEvents"],
+        queryKey: ["events"],
         queryFn:
             loggedInUserType === "organization"
                 ? getEventsOfOrganization
                 : () => [],
     });
-    const orgEvents = data ? data : [] as EventType[];
+    const orgEvents = (data ? data : []) as EventType[];
+    console.log(orgEvents);
+    
     const currentDate = new Date();
     const today = new Date(
         currentDate.getFullYear(),
@@ -70,13 +72,14 @@ function EventTabs() {
     });
 
     const pastEvents = orgEvents.filter((event) => {
-        const eventDate = new Date(event.startDate);
+        const eventDate = new Date(event.endDate);
         return eventDate < today;
     });
 
     const presentEvents = orgEvents.filter((event) => {
-        const eventDate = new Date(event.startDate);
-        return eventDate.getTime() === today.getTime();
+        const eventStartDate = new Date(event.startDate);
+        const eventEndDate = new Date(event.endDate);
+        return eventStartDate < today && eventEndDate > today;
     });
 
     return (

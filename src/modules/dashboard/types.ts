@@ -1,42 +1,46 @@
+import { LocationType } from "../alerts/utils";
+import { EventType } from "../events/utils";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type IndividualDashboardType = {
     _id: string;
     email: string;
-    name?: string;
-    fullName?: string;
+    name: string;
     avatar: string;
     adhaarNo: string;
     dateOfBirth: string;
+    bloodGroup: string;
     permanentAddress: {
         street: string;
         city: string;
         state: string;
-        pincode: number;
+        pincode: string;
     };
     presentAddress: {
         street: string;
         city: string;
         state: string;
-        pincode: number;
+        pincode: string;
     };
-    phoneNo: string;
+    phone: string;
     receivedAlerts?: any[];
     bloodReports?: any[];
     eventsRegistered?: any[];
     eventsAttended?: any[];
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
+    currentLocation?: LocationType
 };
 
 export type OrganizationDashboardType = {
     _id: string;
     email: string;
-    organizationName: string;
+    name: string;
     organizationHeadName: string;
     organizationHeadAdhaar: string;
     cinNo: string;
     typeOfOrganization: string;
-    phoneNo: string;
+    phone: string;
     address: {
         street: string;
         city: string;
@@ -48,6 +52,8 @@ export type OrganizationDashboardType = {
     createdAt: string;
     updatedAt: string;
     events: any[];
+    upcomingEvents: EventType[];
+    currentLocation?: LocationType
 }
 
 export type DoctorDashboardType = {

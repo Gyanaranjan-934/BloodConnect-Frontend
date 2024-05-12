@@ -1,5 +1,5 @@
 import React from "react";
-import { EventType } from "../utils";
+import { EventType } from "../../utils";
 import { ListItem, Typography } from "@material-tailwind/react";
 import IndividualEventDetailsPopup from "./IndividualEventDetailsPopup";
 

@@ -97,6 +97,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 },
                 (error) => {
                     console.error(error);
+                },{
+                    enableHighAccuracy: true,
                 }
             );
         } else {
@@ -115,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                         : "admin"
             );
         }
-    }, [isAuthenticated, setIsAuthenticated, loggedInUserType]);
+    }, [isAuthenticated, setIsAuthenticated, loggedInUserType, geoLocation]);
 
     return (
         <AuthContext.Provider

@@ -3,7 +3,9 @@ import React, { useContext, useState } from "react";
 import { AuthContext } from "../../modules/auth/AuthContext";
 import MapWithAutocomplete from "../utils/Map";
 import { Button } from "@material-tailwind/react";
-import { AlertContext } from "../../modules/alerts/AlertContext";
+import { searchDonors } from "../../modules/alerts/services";
+import { NearbyOrganizationType } from "../../modules/alerts/utils";
+import NearbyOrganizationList from "./NearbyOrganizationList";
 
 const SearchDonors = ({
     onClose,
@@ -18,7 +20,6 @@ const SearchDonors = ({
         longitude: number;
     }>(geoLocation);
     const [address, setAddress] = useState<string>("");
-    const { searchDonors } = useContext(AlertContext);
     const handleClose = () => {
         setIsAlertPopupOpen(false);
 
@@ -27,15 +28,15 @@ const SearchDonors = ({
         }, 100);
     };
 
-    const [allDonors, setAllDonors] = useState<any[]>([]);
+    const [nearbyOrganizations, setNearbyOrganizations] = useState<NearbyOrganizationType[]>([]);
 
     const handleSearch = async () => {
         try {
             // Call searchDonors function to fetch nearby donors
-            const donorsData: any[] = await searchDonors(selectedLocation);
+            const donorsData: NearbyOrganizationType[] = await searchDonors(selectedLocation);
 
             // Update state with the retrieved donors data
-            setAllDonors(donorsData);
+            setNearbyOrganizations(donorsData);
         } catch (error) {
             console.log("Error fetching nearby donors:", error);
         }
@@ -49,7 +50,7 @@ const SearchDonors = ({
                 <div
                     className={`bg-white rounded-lg shadow-md w-[60%] h-min max-h-[90%]  overflow-y-auto p-4 text-center z-10 transform transition-transform ease-in duration-500 ${isAlertPopupOpen ? "scale-100" : "scale-90"}`}
                 >
-                    {allDonors.length === 0 ? (
+                    {nearbyOrganizations.length === 0 ? (
                         <div className="flex flex-col">
                             <MapWithAutocomplete
                                 setSelectedLocation={setSelectedLocation}
@@ -57,18 +58,18 @@ const SearchDonors = ({
                                 address={address}
                             />
                             <div className=" flex justify-around">
-                                <Button color="green" onClick={handleSearch}>
+                                <Button placeholder={""} color="green" onClick={handleSearch}>
                                     Search
                                 </Button>
-                                <Button color="red" onClick={handleClose}>
+                                <Button placeholder={""} color="red" onClick={handleClose}>
                                     Close
                                 </Button>
                             </div>
                         </div>
                     ) : (
                         <>
-                            <div className="">{allDonors.map((donor) => donor.fullName).join(", ")}</div>
-                            <Button color="red" onClick={handleClose}>
+                            <NearbyOrganizationList nearbyOrganizations={nearbyOrganizations} />
+                            <Button placeholder={""} color="red" onClick={handleClose}>
                                 Close
                             </Button>
                         </>

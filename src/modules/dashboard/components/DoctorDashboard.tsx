@@ -1,24 +1,65 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserDashboard } from "../services";
 import { DoctorDashboardType } from "../types";
+import React from "react";
+import { toast } from "react-toastify";
+import ErrorPage from "../../../components/utils/ErrorPage";
+import ProgressBar from "../../../components/utils/ProgressBar";
+import { AuthContext } from "../../auth/AuthContext";
 
 const DoctorDashboard = () => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["dashboard"],
-    queryFn: getUserDashboard,
-});
-if (isLoading) {
-    return <div>Loading...</div>;
-}
+    const { loggedInUserType } = React.useContext(AuthContext);
+    const [editSuccess, setEditSuccess] = React.useState<boolean>(false);
 
-if (isError) {
-    return <div>Error</div>;
-}
+    const getUserDashboardFromServer = async () => {
+        return await getUserDashboard(loggedInUserType);
+    };
 
-const doctorDashboard = data as DoctorDashboardType;
-  return (
-    <div>{JSON.stringify(doctorDashboard)}</div>
-  )
-}
+    const { data, isLoading, isError, refetch } = useQuery({
+        queryKey: ["dashboard"],
+        queryFn: getUserDashboardFromServer,
+    });
 
-export default DoctorDashboard
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: getUserDashboardFromServer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+            setEditSuccess(true);
+        },
+        onError: (error) => {
+            toast(error?.message || "Error updating dashboard", {
+                type: "error",
+            });
+            console.log("Error updating dashboard:", error);
+        },
+    });
+
+    console.log(data);
+
+    const organizationDashboard = data as DoctorDashboardType;
+
+    React.useEffect(() => {
+        if (!data) {
+            refetch();
+        } else {
+            if (editSuccess) {
+                mutation.mutate();
+                setEditSuccess(false);
+            }
+        }
+    }, [editSuccess, mutation, data, refetch]);
+
+    if (isLoading) {
+        return <ProgressBar />;
+    }
+
+    if (isError) {
+        return <ErrorPage />;
+    }
+
+    return <div>{JSON.stringify(organizationDashboard)}</div>;
+};
+
+export default DoctorDashboard;

@@ -10,15 +10,19 @@ import {
 import React from "react";
 import { BloodReportType } from "../types";
 import { DefaultBloodReportDetails, getUserType } from "../utils";
+import { fillBloodReport } from "../../events/services";
+import { toast } from "react-toastify";
 
 function BloodReport({
     open,
     setOpen,
     userId,
+    eventId,
 }: {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     userId: string;
+    eventId?: string;
 }) {
     const handleOpen = () => setOpen(!open);
 
@@ -32,6 +36,18 @@ function BloodReport({
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        console.log(bloodReportDetails);
+        const response = await fillBloodReport(
+            eventId,
+            userId,
+            bloodReportDetails
+        );
+        if (response) {
+            toast("Blood report filled successfully", { type: "success" });
+            handleOpen();
+        } else {
+            toast("Blood report not filled", { type: "error" });
+        }
     };
 
     return (
@@ -65,6 +81,21 @@ function BloodReport({
                 <form onSubmit={handleSubmit}>
                     <DialogBody placeholder={""}>
                         <div className="flex flex-col gap-4">
+                            <Input
+                                crossOrigin={"origin"}
+                                type="text"
+                                placeholder=""
+                                label="Blood Units donated"
+                                value={bloodReportDetails.bloodUnits}
+                                name="bloodUnits"
+                                onChange={(e) =>
+                                    setBloodReportDetails({
+                                        ...bloodReportDetails,
+                                        bloodUnits: e.target.value,
+                                    })
+                                }
+                                disabled={getUserType === "individual"}
+                            />
                             <Input
                                 label="Blood Pressure"
                                 type="text"

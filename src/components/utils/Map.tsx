@@ -35,7 +35,7 @@ const Map = ({
         height: "100%",
     };
     const { geoLocation } = useContext(AuthContext);
-    setKey("AIzaSyDwTywZq2hev2S1Btoz6HuxKCDfy2Rt5ho");
+    setKey(import.meta.env.VITE_GOOGLE_MAP_API_KEY);
 
     const getPlaceName = (lat: number, lng: number) => {
         let addressName = "";
@@ -102,55 +102,59 @@ const Map = ({
 
     return (
         <>
-            <Autocomplete onPlaceChanged={locationSelected} onLoad={onLoad}>
-                <Input
-                    label="Search Address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    type="text"
-                    className="w-full bg-transparent text-gray-600 dark:text-white dark:border-gray-700 rounded-md border border-gray-300 px-3 py-2 text-sm placeholder-gray-600 text-ellipsis invalid:border-red-500 dark:placeholder-gray-300"
-                />
-            </Autocomplete>
-            {isLoaded && (
-                <div className="m-4 p-4 h-[30rem] w-full bg-white">
-                    <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        zoom={10}
-                        center={
-                            markerCurrentPosition || {
-                                lat: geoLocation.latitude,
-                                lng: geoLocation.longitude,
-                            }
-                        }
-                        onClick={(event) => {
-                            console.log(event);
-                            setMarkerCurrentPosition({
-                                lat:
-                                    event.latLng?.lat() || geoLocation.latitude,
-                                lng:
-                                    event.latLng?.lng() ||
-                                    geoLocation.longitude,
-                            });
-                            setSelectedLocation({
-                                latitude:
-                                    event.latLng?.lat() || geoLocation.latitude,
-                                longitude:
-                                    event.latLng?.lng() ||
-                                    geoLocation.longitude,
-                            });
-                        }}
-                    >
-                        <MarkerF
-                            position={
+            <div className="flex flex-col gap-2 justify-center items-center">
+                <Autocomplete onPlaceChanged={locationSelected} className="w-full" onLoad={onLoad}>
+                    <Input
+                        label="Search Address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        type="text"
+                        className="w-full bg-transparent text-gray-600 dark:text-white dark:border-gray-700 rounded-md border border-gray-300 px-3 py-2 text-sm placeholder-gray-600 text-ellipsis invalid:border-red-500 dark:placeholder-gray-300"
+                    />
+                </Autocomplete>
+                {isLoaded && (
+                    <div className="m-4 p-4 h-[30rem] w-full bg-white">
+                        <GoogleMap
+                            mapContainerStyle={mapContainerStyle}
+                            zoom={10}
+                            center={
                                 markerCurrentPosition || {
                                     lat: geoLocation.latitude,
                                     lng: geoLocation.longitude,
                                 }
                             }
-                        />
-                    </GoogleMap>
-                </div>
-            )}
+                            onClick={(event) => {
+                                console.log(event);
+                                setMarkerCurrentPosition({
+                                    lat:
+                                        event.latLng?.lat() ||
+                                        geoLocation.latitude,
+                                    lng:
+                                        event.latLng?.lng() ||
+                                        geoLocation.longitude,
+                                });
+                                setSelectedLocation({
+                                    latitude:
+                                        event.latLng?.lat() ||
+                                        geoLocation.latitude,
+                                    longitude:
+                                        event.latLng?.lng() ||
+                                        geoLocation.longitude,
+                                });
+                            }}
+                        >
+                            <MarkerF
+                                position={
+                                    markerCurrentPosition || {
+                                        lat: geoLocation.latitude,
+                                        lng: geoLocation.longitude,
+                                    }
+                                }
+                            />
+                        </GoogleMap>
+                    </div>
+                )}
+            </div>
         </>
     );
 };

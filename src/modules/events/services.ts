@@ -1,16 +1,25 @@
 import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
-import { DoctorDetailsType } from "../auth/utils";
-import { EventInputType, EventConfig, EventType } from "./utils";
+import { getConfig } from "../alerts/services";
+import { BloodReportType, DoctorDetailsType } from "../auth/types";
+import {
+    AttendDonorsByDoctorType,
+    DonorFormDetailsByDoctorType,
+    EventDetailsType,
+} from "./types";
+import { EventInputType, EventType } from "./utils";
 
 export const createEvent = async (eventDetails: EventInputType) => {
     try {
         console.log(eventDetails);
+        const config = await getConfig();
         const createdEvent = await axiosInstance.post(
             createEndPoint.createEvent(),
             {
                 eventDetails: JSON.stringify(eventDetails),
             },
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(createdEvent);
         if (createdEvent.data.success) {
@@ -25,9 +34,12 @@ export const createEvent = async (eventDetails: EventInputType) => {
 
 export const getDoctors = async (): Promise<DoctorDetailsType[]> => {
     try {
+        const config = await getConfig();
         const doctors = await axiosInstance.get(
             createEndPoint.getDoctors(),
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(doctors);
         return doctors.data.data;
@@ -41,9 +53,12 @@ export const showUpcomingEventsToIndividual = async (): Promise<
     EventType[]
 > => {
     try {
+        const config = await getConfig();
         const upcomingEvents = await axiosInstance.get(
             createEndPoint.showUpcomingEventsIndividual(),
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(upcomingEvents);
         return upcomingEvents.data.data;
@@ -55,9 +70,12 @@ export const showUpcomingEventsToIndividual = async (): Promise<
 
 export const getEventsOfOrganization = async (): Promise<EventType[]> => {
     try {
+        const config = await getConfig();
         const events = await axiosInstance.get(
             createEndPoint.showEventsOrganization(),
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(events);
         return events.data.data;
@@ -71,9 +89,12 @@ export const getRegisteredEventsToIndividual = async (): Promise<
     EventType[]
 > => {
     try {
+        const config = await getConfig();
         const events = await axiosInstance.get(
             createEndPoint.showRegisteredEventsIndividual(),
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(events);
         return events.data.data;
@@ -87,12 +108,15 @@ export const registerForEventByIndividual = async (
     eventId: string
 ): Promise<void> => {
     try {
+        const config = await getConfig();
         console.log(eventId);
 
         const response = await axiosInstance.post(
             createEndPoint.registerForEventByIndividual(),
             { eventId },
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(response);
     } catch (error) {
@@ -102,9 +126,12 @@ export const registerForEventByIndividual = async (
 
 export const getEventsOfDoctor = async (): Promise<EventType[]> => {
     try {
+        const config = await getConfig();
         const events = await axiosInstance.get(
             createEndPoint.getEventsOfDoctor(),
-            EventConfig
+            {
+                headers: config.headers,
+            }
         );
         console.log(events);
         return events.data.data;
@@ -115,46 +142,104 @@ export const getEventsOfDoctor = async (): Promise<EventType[]> => {
 };
 
 export const registerForEventByDoctor = async (
-    eventId: string
-): Promise<void> => {
+    eventId: string,
+    userDetails: DonorFormDetailsByDoctorType
+): Promise<boolean> => {
     try {
-        console.log(eventId);
-
+        const config = await getConfig();
         const response = await axiosInstance.post(
             createEndPoint.registerForEventByDoctor(),
-            { eventId },
-            EventConfig
+            { eventId, ...userDetails },
+            {
+                headers: config.headers,
+            }
         );
-        console.log(response);
+        if(response.data.success){
+            return true;
+        }
+        return false;
     } catch (error) {
         console.log("Error registering for event:", error);
+        return false;
     }
 };
 
 export const getEventDetails = async (
     eventId: string | undefined
-): Promise<EventType[]> => {
-    console.log(eventId);
-
+): Promise<EventDetailsType | null> => {
     if (!eventId) {
-        return [];
+        return null;
     }
     try {
+        const config = await getConfig();
         const eventDetails = await axiosInstance.get(
             createEndPoint.getEventDetails(),
             {
-                ...EventConfig,
+                headers: config.headers,
                 params: {
                     eventId,
                 },
             }
         );
-        console.log(eventDetails);
-        const eventDetailsData: EventType[] = [];
-        eventDetailsData.push(eventDetails.data.data);
-        return eventDetailsData;
+        console.log("eventdetails: ", eventDetails);
+        return eventDetails.data.data as EventDetailsType;
     } catch (error) {
         console.log("Error getting event details:", error);
+        return null;
+    }
+};
+
+export const getAttendedDonors = async (
+    eventId: string | undefined
+): Promise<AttendDonorsByDoctorType[]> => {
+    if (!eventId) {
         return [];
+    }
+    try {
+        const config = await getConfig();
+        const donorDetails = await axiosInstance.get(
+            createEndPoint.getAttendedDonors(),
+            {
+                headers: config.headers,
+                params: {
+                    eventId,
+                },
+            }
+        );
+        console.log(donorDetails);
+
+        return donorDetails.data.data as AttendDonorsByDoctorType[];
+    } catch (error) {
+        console.log("Error getting attended donors details:", error);
+        return [];
+    }
+};
+
+export const fillBloodReport = async (
+    eventId: string | undefined,
+    donorId: string,
+    bloodReportDetails: BloodReportType
+): Promise<boolean> => {
+    try {
+        const config = await getConfig();
+        console.log(eventId, donorId, bloodReportDetails);
+
+        if (!eventId || !donorId || !bloodReportDetails) {
+            return false;
+        }
+        const response = await axiosInstance.post(
+            createEndPoint.fillBloodReport(),
+            { lastCamp: eventId, userId: donorId, ...bloodReportDetails },
+            {
+                headers: config.headers,
+            }
+        );
+        if (response.data.success) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.log("Error filling blood report:", error);
+        return false;
     }
 };

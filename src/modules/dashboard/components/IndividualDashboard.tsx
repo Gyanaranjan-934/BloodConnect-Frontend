@@ -1,19 +1,18 @@
 import React from "react";
-import {
-    Avatar,
-    Button,
-    Card,
-    Input,
-    Typography,
-} from "@material-tailwind/react";
-import moment from "moment";
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { Avatar, Button, Card, Typography } from "@material-tailwind/react";
+import { faEdit, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardHeader from "./DashboardHeader";
 import BloodReport from "../../auth/components/BloodReport";
 import { IndividualDashboardType } from "../types";
-import { getUserDashboard } from "../services";
+import { getUserDashboard, uploadIndividualAvatar } from "../services";
+import ProgressBar from "../../../components/utils/ProgressBar";
+import ErrorPage from "../../../components/utils/ErrorPage";
+import { AuthContext } from "../../auth/AuthContext";
+import UpdateIndividualPopup from "./UpdateIndividualPopup";
+import { toast } from "react-toastify";
+import IndividualDashboardComponent from "./IndividualDashboardComponent";
 
 const TABLE_HEAD = ["Date", "Units"];
 
@@ -38,41 +37,71 @@ const TABLE_ROWS = [
 
 const IndividualDashboard = () => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
+    const [isUpdatePopupOpen, setIsUpdatePopupOpen] = React.useState(false);
+    const [isHovered, setIsHovered] = React.useState(false);
+    const [userAvatar, setUserAvatar] = React.useState<File | undefined>(
+        undefined
+    );
 
-    const [editEnabled, enableEdit] = React.useState(false);
+    const { loggedInUserType } = React.useContext(AuthContext);
+    const accessToken = localStorage.getItem("accessToken");
+    const [editSuccess, setEditSuccess] = React.useState<boolean>(false);
+
+    const getUserDashboardFromServer = async () => {
+        const response = await getUserDashboard(loggedInUserType);
+        return response;
+    };
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
-        queryFn: getUserDashboard,
+        queryFn: getUserDashboardFromServer,
     });
 
-    // React.useEffect(() => {
-    //     if (!data) {
-    //         localStorage.clear();
-    //         window.location.href = "/login";
-    //     }
-    // }, [data]);
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: getUserDashboardFromServer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+            setEditSuccess(true);
+        },
+        onError: (error) => {
+            toast(error?.message || "Error updating dashboard", {
+                type: "error",
+            });
+            console.log("Error updating dashboard:", error);
+        },
+    });
 
     const individualDashboard = data as IndividualDashboardType;
 
     const [userDetails, setUserDetails] =
         React.useState<IndividualDashboardType>(individualDashboard);
 
-    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setUserDetails({ ...userDetails, [name]: value });
-    };
+    React.useEffect(() => {
+        setUserDetails(individualDashboard);
+    }, [individualDashboard]);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    React.useEffect(() => {
+        if (editSuccess) {
+            mutation.mutate();
+            setEditSuccess(false);
+        }
+    }, [editSuccess, mutation]);
+
+    const uploadNewAvatar = async () => {
+        setUserAvatar(undefined);
+        setIsHovered(false);
+        await uploadIndividualAvatar(userAvatar, accessToken);
+        setEditSuccess(true);
     };
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <ProgressBar />;
     }
 
     if (isError) {
-        return <div>Error</div>;
+        return <ErrorPage />;
     }
 
     return (
@@ -81,563 +110,97 @@ const IndividualDashboard = () => {
             <div className="m-4 p-4 ">
                 <div className="flex rounded-md gap-1 justify-around">
                     <div className="p-4 flex bg-gray-200 rounded shadow flex-col w-[70%] ">
-                        {/* Header Container */}
-                        <form onSubmit={handleSubmit}>
-                            <div className="flex justify-between align-middle p-5">
-                                <div className=" self-center">
-                                    <Avatar
-                                        placeholder={"Profile"}
-                                        variant="circular"
-                                        size="lg"
-                                        alt={
-                                            individualDashboard?.name ||
-                                            "No Name"
-                                        }
-                                        className="border border-gray-900 p-0.5"
-                                        src={individualDashboard?.avatar}
-                                    />
-                                </div>
-                                {/* Full Name */}
-                                <div className=" self-center">
-                                    <Typography
-                                        placeholder={""}
-                                        className="text-xl font-semibold"
-                                    >
-                                        {individualDashboard.name ||
-                                            individualDashboard?.fullName ||
-                                            "No Name"}
-                                    </Typography>
-                                </div>
-                                <div className="self-center flex flex-col gap-2">
-                                    {!editEnabled && (
+                        <div className="flex justify-between align-middle p-5">
+                            <div className="relative">
+                                <label
+                                    htmlFor="file-upload"
+                                    className="relative cursor-pointer inline-block"
+                                >
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-300">
+                                        <Avatar
+                                            placeholder={"Profile"}
+                                            src={individualDashboard?.avatar}
+                                            alt="Image"
+                                            className="object-cover w-full h-full"
+                                        />
+                                    </div>
+                                    <div className="absolute inset-0 bg-black opacity-0 hover:opacity-50 transition-opacity duration-300 flex items-center justify-center rounded-full">
+                                        <svg
+                                            className="w-10 h-10 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 512 512"
+                                        >
+                                            <path
+                                                fill="currentColor"
+                                                d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"
+                                            />
+                                        </svg>
+                                    </div>
+                                </label>
+                                <input
+                                    id="file-upload"
+                                    type="file"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const target =
+                                            e.target as HTMLInputElement;
+                                        setIsHovered(true);
+                                        setUserAvatar(target.files?.[0]);
+                                    }}
+                                />
+                                {isHovered && (
+                                    <div className="flex justify-center items-center">
                                         <Button
-                                            placeholder={""}
-                                            onClick={() => enableEdit(true)}
                                             variant="gradient"
                                             size="sm"
                                             color="blue"
-                                        >
-                                            <FontAwesomeIcon icon={faEdit} />
-                                        </Button>
-                                    )}
-                                    {editEnabled && (
-                                        <Button
                                             placeholder={""}
-                                            onClick={() => {}}
-                                            variant="gradient"
-                                            color="lime"
-                                            size="sm"
+                                            onClick={uploadNewAvatar}
                                         >
-                                            Save
+                                            <FontAwesomeIcon icon={faUpload} />{" "}
+                                            Upload
                                         </Button>
-                                    )}
-                                    {editEnabled && (
                                         <Button
-                                            placeholder={""}
-                                            onClick={() => enableEdit(false)}
                                             variant="gradient"
                                             size="sm"
+                                            color="red"
+                                            placeholder={""}
+                                            onClick={() => {
+                                                setUserAvatar(undefined);
+                                                setIsHovered(false);
+                                            }}
                                         >
                                             Cancel
                                         </Button>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
-                            {/* User Details Container */}
-                            <div className="flex mt-4 shadow-md p-5 flex-col bg-gray-300 rounded-md align-middle ">
-                                <div className="flex m-3 gap-2 shadow-sm hover:shadow-md items-center justify-evenly bg-gray-100 rounded">
-                                    <div className=" flex gap-1 ">
-                                        <Typography
-                                            placeholder={""}
-                                            className="text-md m-2 font-semibold"
-                                        >
-                                            Email:
-                                        </Typography>
-                                        {editEnabled ? (
-                                            <Input
-                                                crossOrigin={"origin"}
-                                                className=" self-center"
-                                                variant="standard"
-                                                color="red"
-                                                value={userDetails.email}
-                                                onChange={onChangeHandler}
-                                            />
-                                        ) : (
-                                            <Typography
-                                                placeholder={""}
-                                                className=" self-center"
-                                            >
-                                                {individualDashboard?.email ||
-                                                    "No Email"}
-                                            </Typography>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-1 ">
-                                        <Typography
-                                            placeholder={""}
-                                            className="text-md m-2 font-semibold"
-                                        >
-                                            Phone No. :
-                                        </Typography>
-                                        {editEnabled ? (
-                                            <Input
-                                                crossOrigin={"origin"}
-                                                className=" self-center"
-                                                variant="standard"
-                                                color="red"
-                                                value={userDetails.phoneNo}
-                                                onChange={onChangeHandler}
-                                            />
-                                        ) : (
-                                            <Typography
-                                                placeholder={""}
-                                                className=" self-center"
-                                            >
-                                                {individualDashboard?.phoneNo ||
-                                                    "No Phone"}
-                                            </Typography>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex shadow-sm hover:shadow-md gap-2 m-3 items-center justify-evenly bg-gray-100 rounded">
-                                    <div className="flex gap-1 ">
-                                        <Typography
-                                            placeholder={""}
-                                            className="text-md m-2 font-semibold"
-                                        >
-                                            Date of Birth:
-                                        </Typography>
-                                        {editEnabled ? (
-                                            <Input
-                                                crossOrigin={"origin"}
-                                                className=" self-center"
-                                                variant="standard"
-                                                color="red"
-                                                type="date"
-                                                onChange={onChangeHandler}
-                                            />
-                                        ) : (
-                                            <Typography
-                                                placeholder={""}
-                                                className=" self-center"
-                                            >
-                                                {moment(
-                                                    individualDashboard?.dateOfBirth
-                                                ).format("DD/MM/YYYY") ||
-                                                    "No DOB"}
-                                            </Typography>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-1 ">
-                                        <Typography
-                                            placeholder={""}
-                                            className="text-md m-2 font-semibold"
-                                        >
-                                            Addhaar No. :
-                                        </Typography>
-                                        {editEnabled ? (
-                                            <Input
-                                                crossOrigin={"origin"}
-                                                className=" self-center"
-                                                variant="standard"
-                                                color="red"
-                                                value={userDetails.adhaarNo}
-                                                onChange={onChangeHandler}
-                                            />
-                                        ) : (
-                                            <Typography
-                                                placeholder={""}
-                                                className=" self-center"
-                                            >
-                                                {individualDashboard?.adhaarNo ||
-                                                    "No Adhaar"}
-                                            </Typography>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex shadow-sm hover:shadow-md m-3 items-center justify-around bg-gray-100 rounded">
-                                    <div className="py-2 flex flex-col w-full border-r border-gray-300 items-center gap-4">
-                                        <Typography
-                                            placeholder={""}
-                                            className=" border-b-2 p-1 border-gray-400 font-semibold text-lg"
-                                        >
-                                            Present Address
-                                        </Typography>
-                                        <div className="flex w-full px-8 flex-col gap-1">
-                                            <div className="flex justify-normal border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    Street:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .presentAddress
-                                                                .street
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                presentAddress:
-                                                                    {
-                                                                        ...userDetails.presentAddress,
-                                                                        street: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.presentAddress
-                                                            ?.street ||
-                                                            "No Street"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    City:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .presentAddress
-                                                                .city
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                presentAddress:
-                                                                    {
-                                                                        ...userDetails.presentAddress,
-                                                                        city: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.presentAddress
-                                                            ?.city || "No City"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    State:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .presentAddress
-                                                                .state
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                presentAddress:
-                                                                    {
-                                                                        ...userDetails.presentAddress,
-                                                                        state: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.presentAddress
-                                                            ?.state ||
-                                                            "No State"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    PIN Code:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .presentAddress
-                                                                .pincode
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                presentAddress:
-                                                                    {
-                                                                        ...userDetails.presentAddress,
-                                                                        pincode:
-                                                                            Number(
-                                                                                e
-                                                                                    .target
-                                                                                    .value
-                                                                            ) ||
-                                                                            0,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.presentAddress
-                                                            ?.pincode ||
-                                                            "No Pin Code"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className=" py-2 flex flex-col w-full border-l border-gray-300 items-center gap-4">
-                                        <Typography
-                                            placeholder={""}
-                                            className="border-b-2 p-1 border-gray-400 font-semibold text-lg"
-                                        >
-                                            Permanent Address
-                                        </Typography>
-                                        <div className="flex w-full px-8 flex-col gap-1">
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    Street:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .permanentAddress
-                                                                .street
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                permanentAddress:
-                                                                    {
-                                                                        ...userDetails.permanentAddress,
-                                                                        street: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.permanentAddress
-                                                            ?.street ||
-                                                            "No Street"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    City:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .permanentAddress
-                                                                .city
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                permanentAddress:
-                                                                    {
-                                                                        ...userDetails.permanentAddress,
-                                                                        city: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.permanentAddress
-                                                            ?.city || "No City"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    State:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .permanentAddress
-                                                                .state
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                permanentAddress:
-                                                                    {
-                                                                        ...userDetails.permanentAddress,
-                                                                        state: e
-                                                                            .target
-                                                                            .value,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.permanentAddress
-                                                            ?.state ||
-                                                            "No State"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-1 border-b border-gray-300">
-                                                <Typography
-                                                    placeholder={""}
-                                                    className="text-md m-2 font-semibold"
-                                                >
-                                                    PIN Code:
-                                                </Typography>
-                                                {editEnabled ? (
-                                                    <Input
-                                                        crossOrigin={"origin"}
-                                                        className=" self-center"
-                                                        variant="standard"
-                                                        color="red"
-                                                        type="text"
-                                                        value={
-                                                            userDetails
-                                                                .permanentAddress
-                                                                .pincode
-                                                        }
-                                                        onChange={(e) => {
-                                                            setUserDetails({
-                                                                ...userDetails,
-                                                                permanentAddress:
-                                                                    {
-                                                                        ...userDetails.permanentAddress,
-                                                                        pincode:
-                                                                            Number(
-                                                                                e
-                                                                                    .target
-                                                                                    .value
-                                                                            ) ||
-                                                                            0,
-                                                                    },
-                                                            });
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography
-                                                        placeholder={""}
-                                                        className=" self-center"
-                                                    >
-                                                        {individualDashboard
-                                                            ?.permanentAddress
-                                                            ?.pincode ||
-                                                            "No Pin Code"}
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            {/* Full Name */}
+                            <div className=" self-center">
+                                <Typography
+                                    placeholder={""}
+                                    className="text-xl font-semibold"
+                                >
+                                    {individualDashboard.name || "No Name"}
+                                </Typography>
                             </div>
-                        </form>
+                            <div className="self-center flex flex-col gap-2">
+                                <Button
+                                    placeholder={""}
+                                    onClick={() => setIsUpdatePopupOpen(true)}
+                                    variant="gradient"
+                                    size="sm"
+                                    color="blue"
+                                >
+                                    <FontAwesomeIcon icon={faEdit} /> Edit
+                                    Profile
+                                </Button>
+                            </div>
+                        </div>
+                        {/* User Details Container */}
+                        <IndividualDashboardComponent
+                            userDetails={individualDashboard}
+                        />
                     </div>
                     <div className="flex px-2 mx-2  w-[30%] flex-col">
                         <div className="h-[50%] px-2 mx-2 border border-gray-300 rounded">
@@ -720,8 +283,15 @@ const IndividualDashboard = () => {
                     userId={individualDashboard._id}
                     setOpen={setIsAlertPopupOpen}
                 />
-            )}{" "}
-            ``
+            )}
+            {isUpdatePopupOpen && (
+                <UpdateIndividualPopup
+                    open={isUpdatePopupOpen}
+                    setOpen={setIsUpdatePopupOpen}
+                    userDetails={userDetails}
+                    setEditSuccess={setEditSuccess}
+                />
+            )}
         </>
     );
 };

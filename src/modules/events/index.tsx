@@ -1,11 +1,11 @@
 import React from "react";
 import { EventProvider } from "./EventContext";
-import EventMainPage from "./EventMainPage";
+import EventMainPage from "./organization/EventMainPage";
 import { AuthContext } from "../auth/AuthContext";
-import IndividualEventPage from "./IndividualEventPage";
-import DoctorsEventPage from "./DoctorsEventPage";
+import IndividualEventPage from "./individual/IndividualEventPage";
+import DoctorsEventPage from "./doctor/DoctorsEventPage";
 import { Route } from "react-router-dom";
-import DoctorEventDetailsPage from "./components/DoctorEventDetailsPage";
+import DoctorEventDetailsPage from "./doctor/DoctorEventDetailsPage";
 
 export const EventRoutes = (
     <Route path="doctor/:eventId" element={<DoctorEventDetailsPage />} />

@@ -90,8 +90,9 @@ const DoctorRegisterForm = () => {
                                 crossOrigin={"origin"}
                                 label="Full Name"
                                 placeholder="Full Name"
-                                value={doctorDetails.fullName}
-                                name="fullName"
+                                value={doctorDetails.name}
+                                type="text"
+                                name="name"
                                 required
                                 onChange={formHandler}
                             />
@@ -101,8 +102,9 @@ const DoctorRegisterForm = () => {
                                 crossOrigin={"origin"}
                                 label="Phone Number"
                                 placeholder="Enter your phone number"
-                                name="phoneNo"
-                                value={doctorDetails.phoneNo}
+                                name="phone"
+                                type="tel"
+                                value={doctorDetails.phone}
                                 required
                                 onChange={formHandler}
                             />

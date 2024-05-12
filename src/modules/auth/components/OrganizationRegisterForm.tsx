@@ -17,11 +17,17 @@ import {
     faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { DefaultOrganization, checkPasswordStrength, validateAdhaarNo, validatePhoneNumber } from "../utils";
+import {
+    DefaultOrganization,
+    checkPasswordStrength,
+    validateAdhaarNo,
+    validatePhoneNumber,
+} from "../utils";
 import StepperComponent from "./Stepper";
 import { organizationTypes, statesOfIndia } from "../constants";
 import { OrganizationType } from "../types";
 import { registerOrganization } from "../services";
+import { AuthContext } from "../AuthContext";
 
 export function OrganizationRegisterForm() {
     const [activeStep, setActiveStep] = React.useState(0);
@@ -32,6 +38,8 @@ export function OrganizationRegisterForm() {
 
     const [organizationDetails, setOrganizationDetails] =
         React.useState<OrganizationType>(DefaultOrganization);
+
+    const {geoLocation} = React.useContext(AuthContext);
 
     const [cinError, setCINError] = useState<boolean>(true);
 
@@ -68,7 +76,7 @@ export function OrganizationRegisterForm() {
                     }
                 );
 
-                await registerOrganization(organizationDetails);
+                await registerOrganization(organizationDetails,geoLocation);                
 
                 <Navigate to={"/login"} />;
             }
@@ -194,7 +202,7 @@ export function OrganizationRegisterForm() {
                                 placeholder="Enter your phone number"
                                 name="phone"
                                 type="tel"
-                                value={organizationDetails.phoneNo}
+                                value={organizationDetails.phone}
                                 required
                                 onChange={formHandler}
                             />
@@ -240,6 +248,7 @@ export function OrganizationRegisterForm() {
                                 label="Adhaar No. of Head"
                                 placeholder="Adhaar No. of Head"
                                 name="organizationHeadAdhaar"
+                                type="text"
                                 value={
                                     organizationDetails.organizationHeadAdhaar
                                 }
@@ -437,7 +446,7 @@ export function OrganizationRegisterForm() {
                                     crossOrigin={"origin"}
                                     label="PIN Code"
                                     placeholder="PIN Code"
-                                    type="number"
+                                    type="text"
                                     value={organizationDetails.address.pincode}
                                     required
                                     onChange={(event) => {
@@ -445,9 +454,7 @@ export function OrganizationRegisterForm() {
                                             ...organizationDetails,
                                             address: {
                                                 ...organizationDetails.address,
-                                                pincode: Number(
-                                                    event.target.value
-                                                ),
+                                                pincode: event.target.value,
                                             },
                                         });
                                     }}

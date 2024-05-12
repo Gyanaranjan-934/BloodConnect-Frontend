@@ -5,7 +5,7 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
             {localStorage.getItem("accessToken") ? (
                 <Component {...rest} />
             ) : (
-                <Navigate to="/login" />
+                <Navigate to="/" />
             )}
         </>
     );

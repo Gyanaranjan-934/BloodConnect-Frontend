@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, List } from "@material-tailwind/react";
 import AlertDetails from "./AlertDetails";
 import { getAlerts } from "../services";
+import ProgressBar from "../../../components/utils/ProgressBar";
+import ErrorPage from "../../../components/utils/ErrorPage";
+import { AlertType } from "../utils";
 
 const CreatedAlerts = () => {
     const { data, isLoading, isError } = useQuery({
@@ -11,11 +14,11 @@ const CreatedAlerts = () => {
     });
     console.log(data);
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <ProgressBar/>;
     }
 
     if (isError) {
-        return <div>Error</div>;
+        return <ErrorPage/>;
     }
 
     return (
@@ -25,10 +28,10 @@ const CreatedAlerts = () => {
                     placeholder={""}
                     className="max-h-screen overflow-y-auto no-scrollbar"
                 >
-                    {(data as any)?.map((alert: any) => (
+                    {(data)?.map((alert: AlertType) => (
                         <AlertDetails
                             key={alert._id}
-                            alert={alert}
+                            alertData={alert}
                             type="created"
                         />
                     ))}

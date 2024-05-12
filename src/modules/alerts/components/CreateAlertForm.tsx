@@ -4,7 +4,7 @@ import {
     AlertDetailsType,
     InitialAlertDetails,
     LocationType,
-    NearByUserType,
+    NearbyDonorType,
 } from "../utils";
 import AlertForm from "./AlertForm";
 import UsersListView from "./UsersListView";
@@ -16,17 +16,25 @@ const CreateAlertForm = ({
 }: {
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-    const { geoLocation } = useContext(AuthContext);
+    const { geoLocation, loggedInUserType } = useContext(AuthContext);
     const [selectedLocation, setSelectedLocation] =
         useState<LocationType>(geoLocation);
     const [address, setAddress] = useState<string>("");
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(true);
     const [alertDetails, setAlertDetails] =
         useState<AlertDetailsType>(InitialAlertDetails);
+    const [localAccessToken, setAccessToken] = React.useState<string>("");
+
+    const accessToken = localStorage.getItem("accessToken");
+    React.useEffect(() => {
+        if (accessToken) {
+            setAccessToken(accessToken);
+        }
+    }, [accessToken]);
 
     const [showUsers, setShowUsers] = useState<boolean>(false);
-    const [selectedUsers, setSelectedUsers] = useState<NearByUserType[]>([]);
-    const [nearByUsers, setNearByUsers] = useState<NearByUserType[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<NearbyDonorType[]>([]);
+    const [nearByUsers, setNearByUsers] = useState<NearbyDonorType[]>([]);
 
     const onChangeHandler = (
         e: ChangeEvent<
@@ -53,7 +61,7 @@ const CreateAlertForm = ({
         event.preventDefault();
         console.log(selectedLocation);
         console.log(address);
-
+        console.log(alertDetails);
         setAlertDetails({
             ...alertDetails,
             address: address,
@@ -63,7 +71,13 @@ const CreateAlertForm = ({
             },
         });
         setNearByUsers(
-            await createAlert(alertDetails, selectedLocation, address)
+            await createAlert(
+                alertDetails,
+                selectedLocation,
+                address,
+                localAccessToken,
+                loggedInUserType as "individual" | "organization"
+            )
         );
         setShowUsers(true);
     };

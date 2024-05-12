@@ -20,7 +20,7 @@ export default {
         type: "individual" | "organization" | "doctor" | "admin"
     ): string => `/auth/dashboard/${type}`,
     createAlert: (): string => "/alert/create",
-    searchDonors: (): string => "/alert/get-donors",
+    searchDonors: (): string => "/alert/find-donors",
     sendSelectedDonors: (): string => "/alert/get-donors-list",
     deleteAlertSent: (): string => "/alert/delete-alert-by-sender",
     deleteAlertReceived: (): string => "/alert/delete-alert-by-recipient",
@@ -34,4 +34,8 @@ export default {
     registerForEventByDoctor: (): string => "/event/register-by-doctor",
     getEventsOfDoctor: (): string => "/event/get-events-of-doctor",
     getEventDetails: (): string => "/event/get-event-details",
+    getAttendedDonors: (): string => "/event/get-attended-donors",
+    fillBloodReport: (): string => "/report/fill-blood-report",
+    editProfile: (type: "individual" | "organization"): string => `/auth/edit-profile/${type}`,
+    uploadIndividualAvatar: (): string => "/auth/upload-avatar/individual",
 };

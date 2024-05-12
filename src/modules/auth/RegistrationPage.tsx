@@ -1,12 +1,19 @@
-import { ReactElement, useState } from "react";
-import { RegistrationFormComponent } from "./components/IndividualRegisterForm";
+import React, { ReactElement, useState } from "react";
 import { Radio, Typography } from "@material-tailwind/react";
 import { OrganizationRegisterForm } from "./components/OrganizationRegisterForm";
 import DoctorRegisterForm from "./components/DoctorRegisterForm";
 import ErrorBoundary from "../../ErrorBoundary";
-import { AuthPageCarousel } from "./components/PageCarosoul";
+import IndividualRegisterForm from "./components/IndividualRegisterForm1";
 
-export const RegistrationPage = (): ReactElement => {
+export const RegistrationPage = ({
+    openLoginForm,
+    openRegisterForm,
+    openAuthPopup,
+}: {
+    openLoginForm: React.Dispatch<React.SetStateAction<boolean>>;
+    openRegisterForm: React.Dispatch<React.SetStateAction<boolean>>;
+    openAuthPopup: React.Dispatch<React.SetStateAction<boolean>>;
+}): ReactElement => {
     // get the current geolocation
 
     const [user, setUser] = useState<"individual" | "organization" | "doctor">(
@@ -16,15 +23,22 @@ export const RegistrationPage = (): ReactElement => {
     return (
         <>
             <div className="w-full flex h-full justify-center items-center">
-                <div className="m-4 w-[50%] h-full p-4 bg-white">
-                    <AuthPageCarousel />
-                </div>
-                <div className="w-[50%] m-4 p-4 shadow-md rounded-md">
-                    <div className="flex justify-center">
-                        <Typography
-                            className=" self-center"
-                            placeholder={""}
+                <div className="w-full m-4 p-4 shadow-md rounded-md">
+                    <Typography className="self-center" placeholder={""}>
+                        Already have an account ?{" "}
+                        <span
+                            className=" text-blue-300 font-semibold hover:underline cursor-pointer"
+                            onClick={() => {
+                                openLoginForm(true);
+                                openRegisterForm(false);
+                            }}
                         >
+                            Login
+                        </span>{" "}
+                        here.
+                    </Typography>
+                    <div className="flex justify-center">
+                        <Typography className=" self-center" placeholder={""}>
                             {" "}
                             Register As:{" "}
                         </Typography>
@@ -53,7 +67,11 @@ export const RegistrationPage = (): ReactElement => {
                     <br />
                     {user === "individual" && (
                         <ErrorBoundary>
-                            <RegistrationFormComponent />
+                            <IndividualRegisterForm 
+                                openLoginForm={openLoginForm}
+                                openRegisterForm={openRegisterForm}
+                                openAuthPopup={openAuthPopup}
+                            />
                         </ErrorBoundary>
                     )}
                     {user === "organization" && (

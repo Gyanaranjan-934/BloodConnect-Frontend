@@ -1,5 +1,5 @@
 import { Typography, Checkbox, Avatar, Button } from "@material-tailwind/react";
-import { NearByUserType } from "../utils";
+import { NearbyDonorType } from "../utils";
 
 export default function UsersListView({
     nearByUsers,
@@ -8,9 +8,9 @@ export default function UsersListView({
     submitSelectedDonors,
     handleClose,
 }: {
-    nearByUsers: NearByUserType[];
-    selectedUsers: NearByUserType[];
-    setSelectedUsers: React.Dispatch<React.SetStateAction<NearByUserType[]>>;
+    nearByUsers: NearbyDonorType[];
+    selectedUsers: NearbyDonorType[];
+    setSelectedUsers: React.Dispatch<React.SetStateAction<NearbyDonorType[]>>;
     submitSelectedDonors: () => void;
     handleClose: () => void;
 }) {
@@ -46,7 +46,7 @@ export default function UsersListView({
                     </div>
                 )}
                 <div className="flex flex-col gap-4 mt-2">
-                    {nearByUsers?.map((user: NearByUserType) => (
+                    {nearByUsers?.map((user: NearbyDonorType) => (
                         <div className="flex gap-2 mt-2">
                             <Checkbox
                                 checked={selectedUsers.includes(user)}

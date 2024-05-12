@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import MapWithAutocomplete from "../../../components/utils/Map";
 import { AuthContext } from "../../auth/AuthContext";
 import { EventInputType } from "../utils";
-import { DoctorDetailsType } from "../../auth/utils";
+import { DoctorDetailsType } from "../../auth/types";
 import { getDoctors, createEvent } from "../services";
 
 const EventForm = ({
@@ -344,7 +344,7 @@ const EventForm = ({
                                                         <Chip
                                                             className="m-1"
                                                             value={
-                                                                doctor.fullName
+                                                                doctor.name
                                                             }
                                                             onClose={() => {
                                                                 setSelectedDoctors(
@@ -387,7 +387,7 @@ const EventForm = ({
                                                 const doctors =
                                                     doctorsFullList.filter(
                                                         (doctor) =>
-                                                            doctor.fullName
+                                                            doctor.name
                                                                 .toLowerCase()
                                                                 .includes(
                                                                     name.toLowerCase()
@@ -397,7 +397,7 @@ const EventForm = ({
                                                                 .includes(
                                                                     name.toLowerCase()
                                                                 ) ||
-                                                            doctor.phoneNo
+                                                            doctor.phone
                                                                 .toLowerCase()
                                                                 .includes(
                                                                     name.toLowerCase()
@@ -486,7 +486,7 @@ const EventForm = ({
                                                                                 color="blue-gray"
                                                                             >
                                                                                 {
-                                                                                    doctor.fullName
+                                                                                    doctor.name
                                                                                 }
                                                                             </Typography>
                                                                             <Typography
@@ -502,7 +502,7 @@ const EventForm = ({
                                                                                 }{" "}
                                                                                 |{" "}
                                                                                 {
-                                                                                    doctor.phoneNo
+                                                                                    doctor.phone
                                                                                 }
                                                                             </Typography>
                                                                         </div>

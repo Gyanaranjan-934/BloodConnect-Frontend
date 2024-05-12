@@ -1,26 +1,28 @@
 import React from "react";
-import { EventType } from "../utils";
+import { EventType } from "../../utils";
 import { Card, List } from "@material-tailwind/react";
 import EventListItem from "./EventListItem";
 
-export default function FutureEventsOrg({
+export default function CurrentEvent({
     eventList,
 }: {
     eventList: EventType[];
 }) {
-    const [futureEvents, setFutureEvents] =
+    const [currentEvents, setCurrentEvents] =
         React.useState<EventType[]>(eventList);
     React.useEffect(() => {
-        setFutureEvents(eventList);
+        console.log(eventList);
+        
+        setCurrentEvents(eventList);
     }, [eventList]);
     return (
         <Card className="w-full" placeholder={""}>
             <List placeholder={""}>
-                {futureEvents.map((event) => (
+                {currentEvents.map((event) => (
                     <EventListItem
                         key={event._id}
                         event={event}
-                        setEvents={setFutureEvents}
+                        setEvents={setCurrentEvents}
                     />
                 ))}
             </List>

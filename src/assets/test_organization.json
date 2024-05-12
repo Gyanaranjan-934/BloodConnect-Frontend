@@ -1,0 +1,28 @@
+{
+    "name": "Test4",
+    "email": "test4@gmail.com",
+    "organizationHeadName": "Test4",
+    "organizationHeadAdhaar": "111111111114",
+    "cinNo": "B54931KA2020PTC104932",
+    "typeOfOrganization": "charity",
+    "phone": "1111111114",
+    "address": {
+        "street": "Test Street",
+        "city": "Test City",
+        "state": "Test State",
+        "pincode": "1234567890"
+    },
+    "isVerified": true,
+    "photos": [
+        "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80"
+    ],
+    "createdAt": "2023-04-18T12:00:00.000Z",
+    "updatedAt": "2023-04-18T12:00:00.000Z",
+    "currentLocation": {
+        "type": "Point",
+        "coordinates": [
+            12.123456789,
+            12.123456789
+        ]
+    }
+}

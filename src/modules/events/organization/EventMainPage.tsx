@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import EventForm from "./components/EventForm";
-import { EventInputType, InitialEventInputDetails } from "./utils";
+import EventForm from "../components/EventForm";
+import { EventInputType, InitialEventInputDetails } from "../utils";
 import EventHeader from "./components/EventHeader";
-import EventTabs from "./components/EventTabs";
+import EventTabs from "../components/EventTabs";
 
 const EventMainPage = () => {
     const [eventDetails, setEventDetails] =

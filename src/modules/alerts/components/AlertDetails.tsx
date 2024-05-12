@@ -18,13 +18,17 @@ import {
     ListItemSuffix,
 } from "@material-tailwind/react";
 import moment from "moment";
-import { AlertType } from "../utils";
-import { deleteAlertSent, deleteAlertReceived, respondAlert } from "../services";
+import { AlertType, ReceivedAlertType } from "../utils";
+import {
+    deleteAlertSent,
+    deleteAlertReceived,
+    respondAlert,
+} from "../services";
 const AlertDetails = ({
-    alert,
+    alertData,
     type,
 }: {
-    alert: AlertType;
+    alertData: AlertType | ReceivedAlertType;
     type: "created" | "received";
 }) => {
     const handleDelete = () => {
@@ -34,6 +38,11 @@ const AlertDetails = ({
             deleteAlertReceived(alert._id);
         }
     };
+
+    const alert =
+        type === "created"
+            ? (alertData as AlertType)
+            : (alertData as ReceivedAlertType);
 
     const handleAccept = () => {
         respondAlert(alert._id, true);
@@ -165,27 +174,39 @@ const AlertDetails = ({
                     className="flex flex-col gap-2"
                 >
                     {new Date() <= new Date(alert.expiryTime) ? (
-                        <>
-                            {/* Only to show the accept button if the alert is not expired */}
-                            <Button
-                                variant="gradient"
-                                size="sm"
-                                color="light-blue"
-                                placeholder={""}
-                                onClick={handleAccept}
-                            >
-                                <FontAwesomeIcon icon={faCheckCircle} /> Accept
-                            </Button>
-                            <Button
-                                variant="gradient"
-                                size="sm"
-                                color="red"
-                                placeholder={""}
-                                onClick={handleReject}
-                            >
-                                <FontAwesomeIcon icon={faCancel} /> Reject
-                            </Button>
-                        </>
+                        (alert as ReceivedAlertType).status.isResponded ? (
+                            <Chip
+                                value={
+                                    (alert as ReceivedAlertType).status
+                                        .invitationAccepted
+                                        ? "Accepted"
+                                        : "Rejected"
+                                }
+                            />
+                        ) : (
+                            <>
+                                {/* Only to show the accept button if the alert is not expired */}
+                                <Button
+                                    variant="gradient"
+                                    size="sm"
+                                    color="light-blue"
+                                    placeholder={""}
+                                    onClick={handleAccept}
+                                >
+                                    <FontAwesomeIcon icon={faCheckCircle} />{" "}
+                                    Accept
+                                </Button>
+                                <Button
+                                    variant="gradient"
+                                    size="sm"
+                                    color="red"
+                                    placeholder={""}
+                                    onClick={handleReject}
+                                >
+                                    <FontAwesomeIcon icon={faCancel} /> Reject
+                                </Button>
+                            </>
+                        )
                     ) : (
                         <Button
                             variant="gradient"
