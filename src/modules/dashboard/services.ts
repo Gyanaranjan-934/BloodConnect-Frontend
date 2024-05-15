@@ -1,5 +1,6 @@
 import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
 import { getConfig } from "../alerts/services";
+import { BloodReportDetailsType} from "../auth/types";
 import {
     IndividualDashboardType,
     OrganizationDashboardType,
@@ -32,9 +33,6 @@ export const getUserDashboard = async (
             window.location.href = "/";
         }
 
-        console.log(dashboardDetails);
-        
-        
         const dashboardData = dashboardDetails.data?.data;
         if (loginType === "individual") {
             return dashboardData as IndividualDashboardType;
@@ -51,11 +49,11 @@ export const getUserDashboard = async (
 export const uploadIndividualAvatar = async (
     userAvatar: File | undefined,
     accessToken?: string|null
-): Promise<void> => {
+): Promise<boolean> => {
     try {
         const config = await getConfig();
         if (!userAvatar || !accessToken) {
-            return;
+            return false;
         }
         const formData = new FormData();
         formData.append("avatar", userAvatar);
@@ -66,8 +64,29 @@ export const uploadIndividualAvatar = async (
                 headers: config.headers,
             }
         );
-        console.log(response);
+        if(response.data.success){
+            return true;
+        }
+        return false;
     } catch (error) {
         console.log("Error uploading avatar:", error);
+        return false;
+    }
+};
+
+export const getBloodReports = async() : Promise<BloodReportDetailsType[]> => {
+    try {
+        const config = await getConfig();
+        const reports = await axiosInstance.get(
+            createEndPoint.getBloodReports(),
+            {
+                headers: config.headers,
+            }
+        );
+        console.log(reports);
+        return reports.data.data;
+    } catch (error) {
+        console.log("Error getting blood reports:", error);
+        return [];
     }
 };

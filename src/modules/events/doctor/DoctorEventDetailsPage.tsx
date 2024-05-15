@@ -75,7 +75,6 @@ function DonorEventDetailsPage() {
         setDonorSearchQuery(e.target.value);
         const name = e.target.value;
         const donors = eventDetails?.donorsRegisteredBySelf.filter((donor) => {
-            console.log(donor);
             return (
                 (donor.name.toLowerCase().includes(name.toLowerCase()) ||
                     donor.email.toLowerCase().includes(name.toLowerCase()) ||

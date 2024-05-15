@@ -5,7 +5,6 @@ import {
     Button,
     IconButton,
     Collapse,
-    Badge,
 } from "@material-tailwind/react";
 import { Bars2Icon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../../modules/auth/AuthContext";
@@ -14,22 +13,15 @@ import { ProfileMenu } from "./ProfileMenu";
 import NavList from "./NavList";
 import ErrorBoundary from "../../ErrorBoundary";
 import CreateAlertForm from "../../modules/alerts/components/CreateAlertForm";
-import SearchDonors from "../donors/SearchDonors";
 import AuthPopup from "../../modules/auth/components/AuthPopup";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import NotificationComponent from "./NotificationComponent";
 
 export default function NavbarLayout() {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
-    const [isSearchDonorsPopupOpen, setIsSearchDonorsPopupOpen] =
-        React.useState(false);
     const [isLoginPopupOpen, setIsLoginPopupOpen] = React.useState(false);
     const [isRegisterPopupOpen, setIsRegisterPopupOpen] = React.useState(false);
     const [isAuthPopupOpen, setIsAuthPopupOpen] = React.useState(false);
     const [isNavOpen, setIsNavOpen] = React.useState(false);
     const { isAuthenticated } = React.useContext(AuthContext);
-    const [notificationOpen, setNotificationOpen] = React.useState(false);
 
     const toggleIsNavOpen = () => setIsNavOpen((cur) => !cur);
 
@@ -61,9 +53,6 @@ export default function NavbarLayout() {
                         <NavList
                             isAuthenticated={isAuthenticated}
                             setIsAlertPopupOpen={setIsAlertPopupOpen}
-                            setIsSearchDonorsPopupOpen={
-                                setIsSearchDonorsPopupOpen
-                            }
                         />
                     </div>
 
@@ -107,46 +96,16 @@ export default function NavbarLayout() {
                     </IconButton>
 
                     {isAuthenticated && <ProfileMenu />}
-                    {isAuthenticated && (
-                        <div className="fixed top-1 lg-max:right-[15%] lg:right-20">
-                            <Button
-                                placeholder={"Notification"}
-                                className="bg-transparent shadow-none hover:shadow-none"
-                                onClick={() =>
-                                    setNotificationOpen(!notificationOpen)
-                                }
-                            >
-                                <Badge content={5}>
-                                    <FontAwesomeIcon
-                                        color="black"
-                                        size="2x"
-                                        icon={faBell}
-                                    />
-                                </Badge>
-                            </Button>
-                            <div className="mt-2 w-full">
-                                <NotificationComponent
-                                    isNotificationOpen={notificationOpen}
-                                />
-                            </div>
-                        </div>
-                    )}
                 </div>
                 <Collapse open={isNavOpen} className="overflow-scroll">
                     <NavList
                         isAuthenticated={isAuthenticated}
                         setIsAlertPopupOpen={setIsAlertPopupOpen}
-                        setIsSearchDonorsPopupOpen={setIsSearchDonorsPopupOpen}
                     />
                 </Collapse>
             </Navbar>
             {isAlertPopupOpen && (
                 <CreateAlertForm onClose={setIsAlertPopupOpen} />
-            )}
-            {isSearchDonorsPopupOpen && (
-                <ErrorBoundary>
-                    <SearchDonors onClose={setIsSearchDonorsPopupOpen} />
-                </ErrorBoundary>
             )}
             {isAuthPopupOpen && (
                 <ErrorBoundary>

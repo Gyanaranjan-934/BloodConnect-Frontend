@@ -9,15 +9,21 @@ export default function RegisteredEvents() {
         queryKey: ["registeredEvents"],
         queryFn: getRegisteredEventsToIndividual,
     });
-    const registeredEvents = (data ? data : []) as EventType[];
-    console.log(registeredEvents);
-    
+    let registeredEvents = (data ? data : []) as EventType[];
+    registeredEvents = registeredEvents.sort(
+        (a: EventType, b: EventType) =>
+            new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
+    );
+
     return (
         <Card className="w-full" placeholder={""}>
             <List placeholder={""}>
                 {registeredEvents.map((event) => (
                     <div key={event._id}>
-                        <IndividualEventListItem event={event} />
+                        <IndividualEventListItem
+                            isRegistered={true}
+                            event={event}
+                        />
                     </div>
                 ))}
             </List>

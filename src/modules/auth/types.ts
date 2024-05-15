@@ -111,3 +111,14 @@ export type BloodReportType = {
     updatedBy?: string;
     lastCamp?: string;
 }
+
+export type BloodReportDetailsType = {
+    _id: string;
+    bloodPressure: string;
+    weight: string;
+    height: string;
+    sugarLevel: string;
+    hemoglobinCount: string;
+    heartRateCount: string;
+    createdAt: Date;
+}

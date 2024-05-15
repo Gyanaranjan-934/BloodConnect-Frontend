@@ -33,7 +33,6 @@ export const getAlerts = async (): Promise<AlertType[]> => {
                 headers: config.headers,
             }
         );
-        console.log(createdAlerts);
         return createdAlerts.data.data;
     } catch (error) {
         console.log("Error getting alert:", error);
@@ -80,7 +79,7 @@ export const createAlert = async (
                 },
             }
         );
-        console.log(data);
+        
         return data.data;
     } catch (error) {
         console.log("Error creating alert:", error);
@@ -105,7 +104,6 @@ export const searchDonors = async (
                 },
             }
         );
-        console.log(createdAlert);
         
         return createdAlert.data.data;
     } catch (error) {
@@ -140,7 +138,7 @@ export const getReceivedAlerts = async (): Promise<ReceivedAlertType[]> => {
                 headers: config.headers,
             }
         );
-        console.log(createdAlerts);
+        
         return createdAlerts.data.data;
     } catch (error) {
         console.log("Error getting alert:", error);
@@ -148,34 +146,38 @@ export const getReceivedAlerts = async (): Promise<ReceivedAlertType[]> => {
     }
 };
 
-export const deleteAlertSent = async (alertId: string): Promise<void> => {
+export const deleteAlertSent = async (alertId: string): Promise<boolean> => {
     try {
         const config = await getConfig();
-        const createdAlert = await axiosInstance.delete(
+        const deletedAlert = await axiosInstance.delete(
             createEndPoint.deleteAlertSent(),
             { headers: config.headers, params: { alertId } }
         );
-        console.log(createdAlert);
-
-        // return createdAlert.data.data;
+        if(deletedAlert.data.success){
+            return true;
+        }
+        return false;
     } catch (error) {
         console.log("Error deleting alert:", error);
+        return false;
     }
 };
 
-export const deleteAlertReceived = async (alertId: string): Promise<void> => {
+export const deleteAlertReceived = async (alertId: string): Promise<boolean> => {
     console.log(alertId);
     try {
         const config = await getConfig();
-        const createdAlert = await axiosInstance.delete(
+        const deletedAlert = await axiosInstance.delete(
             createEndPoint.deleteAlertReceived(),
             { headers: config.headers, params: { alertId } }
         );
-        console.log(createdAlert);
-
-        // return createdAlert.data.data;
+        if(deletedAlert.data.success){
+            return true;
+        }
+        return false;
     } catch (error) {
         console.log("Error deleting alert:", error);
+        return false;
     }
 };
 

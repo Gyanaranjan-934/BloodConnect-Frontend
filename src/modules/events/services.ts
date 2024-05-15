@@ -106,11 +106,9 @@ export const getRegisteredEventsToIndividual = async (): Promise<
 
 export const registerForEventByIndividual = async (
     eventId: string
-): Promise<void> => {
+): Promise<boolean> => {
     try {
         const config = await getConfig();
-        console.log(eventId);
-
         const response = await axiosInstance.post(
             createEndPoint.registerForEventByIndividual(),
             { eventId },
@@ -118,9 +116,13 @@ export const registerForEventByIndividual = async (
                 headers: config.headers,
             }
         );
-        console.log(response);
+        if (response.data.success) {
+            return true;
+        }
+        return false;
     } catch (error) {
         console.log("Error registering for event:", error);
+        return false;
     }
 };
 

@@ -1,11 +1,11 @@
 import React from "react";
 import { AuthContext } from "../auth/AuthContext";
 import IndividualDashboard from "./components/IndividualDashboard";
-import AdminDashboard from "./components/AdminDashboard";
 import OrganizationDashboard from "./components/OrganizationDashboard";
 import DoctorDashboard from "./components/DoctorDashboard";
 import ErrorBoundary from "../../ErrorBoundary";
 import { DashboardProvider } from "./DashboardContext";
+import { Adminpage } from "../admin/AdminPage";
 
 const Dashboard = () => {
     const { loggedInUserType } = React.useContext(AuthContext);
@@ -17,7 +17,7 @@ const Dashboard = () => {
             dashboardComponent = <IndividualDashboard />;
             break;
         case "admin":
-            dashboardComponent = <AdminDashboard />;
+            dashboardComponent = <Adminpage />;
             break;
         case "organization":
             dashboardComponent = <OrganizationDashboard />;

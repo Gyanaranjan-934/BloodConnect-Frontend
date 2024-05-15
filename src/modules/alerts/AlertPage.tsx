@@ -7,6 +7,9 @@ import {
 } from "@material-tailwind/react";
 import CreatedAlerts from "./components/CreatedAlerts";
 import ReceivedAlerts from "./components/ReceivedAlerts";
+import { AuthContext } from "../auth/AuthContext";
+import { Navigate } from "react-router-dom";
+import React from "react";
 
 const TabList = [
     { label: "Created Alerts", value: 0, content: <CreatedAlerts /> },
@@ -14,6 +17,10 @@ const TabList = [
 ];
 
 const AlertPage = () => {
+    const { loggedInUserType } = React.useContext(AuthContext);
+    if (loggedInUserType === "admin") {
+        return <Navigate to={"/dashboard"} />;
+    }
     return (
         <Tabs value={0} placeholder={""}>
             <TabsHeader placeholder={""}>

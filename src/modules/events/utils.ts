@@ -1,3 +1,6 @@
+import { DoctorType } from "../admin/types";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type EventInputType = {
     eventName: string;
     eventHeadName: string;
@@ -48,12 +51,14 @@ export const EventConfig = {
         Authorization: `Bearer ${accessToken}`,
         userType: loginType,
     },
-}
+};
 
 export type EventType = {
+    donorsRegisteredBySelf: any;
     _id: string;
     eventName: string;
     eventHeadName: string;
+    organizationId: any;
     startDate: Date;
     endDate: Date;
     startTime: string;
@@ -65,7 +70,7 @@ export type EventType = {
     maxDonorCapacity: number;
     availableStaffCount: number;
     availableBedCount: number;
-    doctors: string[];
+    doctors: DoctorType[];
     address: string;
     location: {
         type: "Point";
@@ -76,5 +81,6 @@ export type EventType = {
     createdAt: string;
     updatedAt: string;
     isVerified: boolean;
+    isAttended: boolean;
     __v: number;
-}
+};

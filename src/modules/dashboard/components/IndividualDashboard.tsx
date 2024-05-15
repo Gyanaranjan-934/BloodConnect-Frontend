@@ -1,9 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
-import { Avatar, Button, Card, Typography } from "@material-tailwind/react";
+import { Avatar, Button, Typography } from "@material-tailwind/react";
 import { faEdit, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import DashboardHeader from "./DashboardHeader";
 import BloodReport from "../../auth/components/BloodReport";
 import { IndividualDashboardType } from "../types";
 import { getUserDashboard, uploadIndividualAvatar } from "../services";
@@ -13,38 +13,29 @@ import { AuthContext } from "../../auth/AuthContext";
 import UpdateIndividualPopup from "./UpdateIndividualPopup";
 import { toast } from "react-toastify";
 import IndividualDashboardComponent from "./IndividualDashboardComponent";
-
-const TABLE_HEAD = ["Date", "Units"];
-
-const TABLE_ROWS = [
-    {
-        date: "23/04/18",
-        units: "120",
-    },
-    {
-        date: "23/04/18",
-        units: "100",
-    },
-    {
-        date: "19/09/17",
-        units: "80",
-    },
-    {
-        date: "24/12/08",
-        units: "150",
-    },
-];
+import ErrorBoundary from "../../../ErrorBoundary";
+import SearchDonors from "../../appointment/components/SearchDonors";
+import DonationHistory from "./DonationHistory";
+import AppointmentTable from "./AppointmentTable";
 
 const IndividualDashboard = () => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
+
     const [isUpdatePopupOpen, setIsUpdatePopupOpen] = React.useState(false);
+
+    const [isAppointmentPopupOpen, setIsAppointmentPopupOpen] =
+        React.useState(false);
+
     const [isHovered, setIsHovered] = React.useState(false);
+
     const [userAvatar, setUserAvatar] = React.useState<File | undefined>(
         undefined
     );
 
     const { loggedInUserType } = React.useContext(AuthContext);
+
     const accessToken = localStorage.getItem("accessToken");
+
     const [editSuccess, setEditSuccess] = React.useState<boolean>(false);
 
     const getUserDashboardFromServer = async () => {
@@ -63,7 +54,7 @@ const IndividualDashboard = () => {
         mutationFn: getUserDashboardFromServer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-            setEditSuccess(true);
+            setEditSuccess(false);
         },
         onError: (error) => {
             toast(error?.message || "Error updating dashboard", {
@@ -82,19 +73,20 @@ const IndividualDashboard = () => {
         setUserDetails(individualDashboard);
     }, [individualDashboard]);
 
-    React.useEffect(() => {
-        if (editSuccess) {
-            mutation.mutate();
-            setEditSuccess(false);
-        }
-    }, [editSuccess, mutation]);
-
     const uploadNewAvatar = async () => {
         setUserAvatar(undefined);
         setIsHovered(false);
-        await uploadIndividualAvatar(userAvatar, accessToken);
-        setEditSuccess(true);
+        const response = await uploadIndividualAvatar(userAvatar, accessToken);
+        if (response) {
+            setEditSuccess(true);
+        }
     };
+
+    React.useEffect(() => {
+        if (editSuccess) {
+            mutation.mutate();
+        }
+    }, [editSuccess]);
 
     if (isLoading) {
         return <ProgressBar />;
@@ -106,7 +98,6 @@ const IndividualDashboard = () => {
 
     return (
         <>
-            <DashboardHeader setIsAlertPopupOpen={setIsAlertPopupOpen} />
             <div className="m-4 p-4 ">
                 <div className="flex rounded-md gap-1 justify-around">
                     <div className="p-4 flex bg-gray-200 rounded shadow flex-col w-[70%] ">
@@ -195,6 +186,15 @@ const IndividualDashboard = () => {
                                     <FontAwesomeIcon icon={faEdit} /> Edit
                                     Profile
                                 </Button>
+                                <Button
+                                    placeholder={""}
+                                    title="Create Event"
+                                    color="blue-gray"
+                                    size="sm"
+                                    onClick={() => setIsAlertPopupOpen(true)}
+                                >
+                                    Blood Report
+                                </Button>
                             </div>
                         </div>
                         {/* User Details Container */}
@@ -202,78 +202,16 @@ const IndividualDashboard = () => {
                             userDetails={individualDashboard}
                         />
                     </div>
-                    <div className="flex px-2 mx-2  w-[30%] flex-col">
-                        <div className="h-[50%] px-2 mx-2 border border-gray-300 rounded">
-                            <Typography
-                                placeholder={""}
-                                className="text-center font-semibold"
-                            >
-                                {"Donation History"}
-                            </Typography>
-                            <Card
-                                placeholder={""}
-                                className="w-full overflow-auto"
-                            >
-                                <table className="w-full min-w-max table-auto text-left">
-                                    <thead>
-                                        <tr>
-                                            {TABLE_HEAD.map((head) => (
-                                                <th
-                                                    key={head}
-                                                    className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
-                                                >
-                                                    <Typography
-                                                        placeholder={""}
-                                                        variant="small"
-                                                        color="blue-gray"
-                                                        className="font-normal leading-none opacity-70"
-                                                    >
-                                                        {head}
-                                                    </Typography>
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {TABLE_ROWS.map((item, ind) => (
-                                            <tr
-                                                key={ind}
-                                                className="even:bg-blue-gray-50/50"
-                                            >
-                                                <td className="p-4">
-                                                    <Typography
-                                                        placeholder={""}
-                                                        variant="small"
-                                                        color="blue-gray"
-                                                        className="font-normal"
-                                                    >
-                                                        {item.date}
-                                                    </Typography>
-                                                </td>
-                                                <td className="p-4">
-                                                    <Typography
-                                                        placeholder={""}
-                                                        variant="small"
-                                                        color="blue-gray"
-                                                        className="font-normal"
-                                                    >
-                                                        {item.units}
-                                                    </Typography>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </Card>
-                        </div>
-                        <div className="h-[50%]">
-                            <Typography
-                                placeholder={""}
-                                className="text-center font-semibold"
-                            >
-                                {"Appointments"}
-                            </Typography>
-                        </div>
+                    <div className="flex px-2 mx-2  w-[30%] flex-col gap-2">
+                        <DonationHistory
+                            individualDashboard={individualDashboard}
+                        />
+                        <AppointmentTable
+                            individualDashboard={individualDashboard}
+                            setIsAppointmentPopupOpen={
+                                setIsAppointmentPopupOpen
+                            }
+                        />
                     </div>
                 </div>
             </div>
@@ -291,6 +229,15 @@ const IndividualDashboard = () => {
                     userDetails={userDetails}
                     setEditSuccess={setEditSuccess}
                 />
+            )}
+            {isAppointmentPopupOpen && (
+                <ErrorBoundary>
+                    <SearchDonors
+                        onClose={setIsAppointmentPopupOpen}
+                        editSuccess={editSuccess}
+                        setEditSuccess={setEditSuccess}
+                    />
+                </ErrorBoundary>
             )}
         </>
     );

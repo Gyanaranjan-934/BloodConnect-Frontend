@@ -12,7 +12,8 @@ import { toast } from "react-toastify";
 import { loginUser } from "../services";
 import { LoginFormType } from "../types";
 import { loginTypes } from "../constants";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { loginAdmin } from "../../admin/services";
 
 const LoginFormComponent = ({
     openRegisterForm,
@@ -86,20 +87,25 @@ const LoginFormComponent = ({
                 toast.error(error?.message || "An error occured");
             }
         } else if (
-            userDetails.userType === "admin" ||
-            userDetails.userType === "doctor"
+            userDetails.userType === "doctor" ||
+            userDetails.userType === "admin"
         ) {
             try {
-                const response = await loginUser(userDetails);
+                const response =
+                    userDetails.userType === "doctor"
+                        ? await loginUser(userDetails)
+                        : await loginAdmin(userDetails);
                 if (response.success) {
                     setIsAuthenticated(true);
                     setLoggedInUserType(userDetails.userType);
+                    console.log(response.userData);
+                    
                     setLoggedInUser(response.userData);
                     toast("Login successful", { type: "success" });
                     openAuthPopup(false);
                     openLoginForm(false);
                     openRegisterForm(false);
-                    <Navigate to={"/dashboard"} />;
+                    navigate("/dashboard");
                 } else {
                     toast("Some error occured", { type: "error" });
                 }

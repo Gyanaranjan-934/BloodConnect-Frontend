@@ -21,7 +21,9 @@ export default function UsersListView({
                     placeholder={"Create Alert"}
                     className="text-lg font-bold"
                 >
-                    Nearby Users
+                    {nearByUsers.length > 0
+                        ? `${nearByUsers.length} Nearby users found`
+                        : "No Nearby users found"}
                 </Typography>
                 {nearByUsers.length > 0 && (
                     <div className="flex flex-col gap-4 mt-2">

@@ -25,8 +25,7 @@ export const registerIndividual = async (
             createEndPoint.createIndividual(),
             { ...data }
         );
-        console.log(mongoUser);
-
+        
         if (mongoUser.data.success) {
             return true;
         }
@@ -40,7 +39,7 @@ export const registerIndividual = async (
 export const registerOrganization = async (
     data: OrganizationType,
     location?: LocationType
-): Promise<void> => {
+): Promise<boolean> => {
     if (location) {
         data.currentLocation = location;
     }
@@ -49,21 +48,31 @@ export const registerOrganization = async (
             createEndPoint.createOrganization(),
             data
         );
-        console.log(mongoUser.data);
+
+        if (mongoUser.data.success) {
+            return true;
+        }
+        return false;
+        
     } catch (error) {
         console.log(error);
+        return false;
     }
 };
 
-export const registerDoctor = async (data: DoctorType): Promise<void> => {
+export const registerDoctor = async (data: DoctorType): Promise<boolean> => {
     try {
         const mongoUser = await axiosInstance.post(
             createEndPoint.createDoctor(),
             data
         );
-        console.log(mongoUser.data);
+        if (mongoUser.data.success) {
+            return true;
+        }
+        return false;
     } catch (error) {
         console.log(error);
+        return false;
     }
 };
 
@@ -79,7 +88,6 @@ export const loginUser = async (
             createEndPoint.loginUser(userDetails.userType),
             userDetails
         );
-        console.log(loginResponse);
 
         if (loginResponse.data.success) {
             localStorage.setItem("loginType", userDetails.userType);
@@ -97,7 +105,7 @@ export const loginUser = async (
             );
             return {
                 success: true,
-                userData: loginResponse.data.data,
+                userData: loginResponse.data.data.user,
                 accessToken: loginResponse.data.accessToken,
                 refreshToken: loginResponse.data.refreshToken,
             };
@@ -123,7 +131,7 @@ export const editProfile = async (
         state: string;
         pincode: string;
     }
-) => {
+): Promise<boolean> => {
     try {
         const config = await getConfig();
         if (location) {
@@ -139,8 +147,7 @@ export const editProfile = async (
             {
                 headers: config.headers,
             }
-        );
-        console.log(response);
+        ); 
 
         if (response.data.success) {
             return true;

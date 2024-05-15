@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
 import { AuthContext } from "../../auth/AuthContext";
 import { getUserDashboard } from "../services";
@@ -26,7 +27,7 @@ const OrganizationDashboard = () => {
         mutationFn: getUserDashboardFromServer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-            setEditSuccess(true);
+            setEditSuccess(false);
         },
         onError: (error) => {
             toast(error?.message || "Error updating dashboard", {
@@ -50,10 +51,9 @@ const OrganizationDashboard = () => {
         } else {
             if (editSuccess) {
                 mutation.mutate();
-                setEditSuccess(false);
             }
         }
-    }, [editSuccess, mutation, data, refetch]);
+    }, [editSuccess, data, refetch]);
     if (isLoading) {
         return <ProgressBar />;
     }

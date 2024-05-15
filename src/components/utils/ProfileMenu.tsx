@@ -11,21 +11,17 @@ import {
 import {
     UserCircleIcon,
     ChevronDownIcon,
-    Cog6ToothIcon,
     PowerIcon,
 } from "@heroicons/react/24/solid";
 import { AuthContext } from "../../modules/auth/AuthContext";
+import { useNavigate } from "react-router-dom";
+import userIcon from "../../assets/user.png";
 
 // profile menu component
 const profileMenuItems = [
     {
         label: "My Profile",
         icon: UserCircleIcon,
-        path: "/dashboard",
-    },
-    {
-        label: "Edit Profile",
-        icon: Cog6ToothIcon,
         path: "/dashboard",
     },
     {
@@ -36,8 +32,11 @@ const profileMenuItems = [
 
 export function ProfileMenu() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const { setIsAuthenticated } = React.useContext(AuthContext);
+    const { setIsAuthenticated, loggedInUser } = React.useContext(AuthContext);
+    console.log(loggedInUser);
+    
     const closeMenu = () => setIsMenuOpen(false);
+    const navigate = useNavigate();
 
     return (
         <Menu open={isMenuOpen} handler={setIsMenuOpen} placement="bottom-end">
@@ -51,9 +50,9 @@ export function ProfileMenu() {
                     <Avatar
                         variant="circular"
                         size="sm"
-                        alt="tania andrew"
+                        alt={loggedInUser?.name || ""}
                         className="border border-gray-900 p-0.5"
-                        src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80"
+                        src={loggedInUser?.avatar || userIcon}
                         placeholder={undefined}
                     />
                     <ChevronDownIcon
@@ -76,6 +75,7 @@ export function ProfileMenu() {
                                     setIsAuthenticated(false);
                                     window.location.href = "/";
                                 } else {
+                                    navigate(`/dashboard`);
                                     closeMenu();
                                 }
                             }}

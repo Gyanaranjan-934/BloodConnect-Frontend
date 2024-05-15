@@ -51,8 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         false
     );
     const [geoLocation, setGeoLocation] = useState<LocationType>({
-        latitude: 0,
-        longitude: 0,
+        latitude: 11.3195427,
+        longitude: 75.929367,
     });
     const [loggedInUser, setLoggedInUser] = useState();
     const [loggedInUserType, setLoggedInUserType] = useState<
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (permission === "granted") {
             const token = await getToken(messaging, {
                 vapidKey:
-                    "BPSW6Z9tSw-WLO4qvrxMZykj0R07mGFWl0bAUhtbaETegyVPTi9nuSQu6N1xzIkbikQ6-adQpHR7Rjk_09O6yuA",
+                    import.meta.env.VITE_FIREBASE_VAPID_KEY,
             });
         }
     }

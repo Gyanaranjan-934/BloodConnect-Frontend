@@ -15,7 +15,10 @@ export default function FutureEvents() {
             <List placeholder={""}>
                 {upcomingEvents.map((event) => (
                     <div key={event._id}>
-                        <IndividualEventListItem event={event} />
+                        <IndividualEventListItem
+                            isRegistered={false}
+                            event={event}
+                        />
                     </div>
                 ))}
             </List>

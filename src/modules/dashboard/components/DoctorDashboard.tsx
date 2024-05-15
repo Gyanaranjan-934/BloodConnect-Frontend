@@ -26,7 +26,7 @@ const DoctorDashboard = () => {
         mutationFn: getUserDashboardFromServer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-            setEditSuccess(true);
+            setEditSuccess(false);
         },
         onError: (error) => {
             toast(error?.message || "Error updating dashboard", {

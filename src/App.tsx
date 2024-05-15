@@ -5,20 +5,21 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import NavbarLayout from "./components/utils/Navbar";
-import React from "react";
+import NotFoundPage from "./components/utils/NotFoundPage";
 // import { ToastContainer } from "react-toastify";
 
 library.add(fab, fas, far);
 
 function App() {
     return (
-        <div className="w-screen h-screen">
+        <div className="">
             <div className="flex justify-center">
                 <NavbarLayout />
             </div>
             <div className=" mt-16">
                 <Routes>
                     <Route path="/*" element={<MainPage />} />
+                    <Route path="*" element={<NotFoundPage/>}/>
                 </Routes>
             </div>
         </div>

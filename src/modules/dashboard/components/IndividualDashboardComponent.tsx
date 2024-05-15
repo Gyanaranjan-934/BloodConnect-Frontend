@@ -68,6 +68,17 @@ export default function IndividualDashboardComponent({
                         {individualDashboard?.adhaarNo || "No Adhaar"}
                     </Typography>
                 </div>
+                <div className="flex gap-1 ">
+                    <Typography
+                        placeholder={""}
+                        className="text-md m-2 font-semibold"
+                    >
+                        Blood Group:
+                    </Typography>
+                    <Typography placeholder={""} className=" self-center">
+                        {individualDashboard?.bloodGroup || "No Blood Group"}
+                    </Typography>
+                </div>
             </div>
             <div className="flex shadow-sm hover:shadow-md m-3 items-center justify-around bg-gray-100 rounded">
                 <div className="py-2 flex flex-col w-full border-r border-gray-300 items-center gap-4">

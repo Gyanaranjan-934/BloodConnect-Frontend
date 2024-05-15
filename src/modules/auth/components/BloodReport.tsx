@@ -12,6 +12,8 @@ import { BloodReportType } from "../types";
 import { DefaultBloodReportDetails, getUserType } from "../utils";
 import { fillBloodReport } from "../../events/services";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
+import { getBloodReports } from "../../dashboard/services";
 
 function BloodReport({
     open,
@@ -25,6 +27,30 @@ function BloodReport({
     eventId?: string;
 }) {
     const handleOpen = () => setOpen(!open);
+
+    const { data, refetch } = useQuery({
+        queryKey: ["bloodReport"],
+        queryFn: getUserType !== "doctor" ? getBloodReports : () => [] as [],
+    });
+
+    React.useEffect(() => {
+        if (!data) {
+            refetch();
+        }
+    }, [data]);
+
+    const bloodReportData =
+        data && data.length > 0
+            ? data[0]
+            : {
+                  bloodPressure: "",
+                  weight: "",
+                  height: "",
+                  sugarLevel: "",
+                  hemoglobinCount: "",
+                  heartRateCount: "",
+                  createdAt: new Date(),
+              };
 
     const [bloodReportDetails, setBloodReportDetails] =
         React.useState<BloodReportType>(DefaultBloodReportDetails);
@@ -73,7 +99,11 @@ function BloodReport({
                         >
                             Last Updated:{" "}
                             <span className="text-gray-500">
-                                {new Date().toLocaleString()}
+                                {getUserType !== "doctor"
+                                    ? new Date(
+                                          bloodReportData.createdAt
+                                      ).toLocaleString()
+                                    : new Date().toLocaleString()}
                             </span>
                         </Typography>
                     </div>
@@ -81,80 +111,108 @@ function BloodReport({
                 <form onSubmit={handleSubmit}>
                     <DialogBody placeholder={""}>
                         <div className="flex flex-col gap-4">
-                            <Input
-                                crossOrigin={"origin"}
-                                type="text"
-                                placeholder=""
-                                label="Blood Units donated"
-                                value={bloodReportDetails.bloodUnits}
-                                name="bloodUnits"
-                                onChange={(e) =>
-                                    setBloodReportDetails({
-                                        ...bloodReportDetails,
-                                        bloodUnits: e.target.value,
-                                    })
-                                }
-                                disabled={getUserType === "individual"}
-                            />
+                            {getUserType === "doctor" && (
+                                <Input
+                                    crossOrigin={"origin"}
+                                    type="text"
+                                    placeholder=""
+                                    label="Blood Units donated"
+                                    title="Blood Units donated"
+                                    value={bloodReportDetails.bloodUnits}
+                                    name="bloodUnits"
+                                    onChange={(e) =>
+                                        setBloodReportDetails({
+                                            ...bloodReportDetails,
+                                            bloodUnits: e.target.value,
+                                        })
+                                    }
+                                    disabled={getUserType !== "doctor"}
+                                />
+                            )}
                             <Input
                                 label="Blood Pressure"
                                 type="text"
                                 placeholder=""
                                 crossOrigin={"origin"}
-                                value={bloodReportDetails.bloodPressure}
+                                title="Blood Pressure"
+                                value={
+                                    getUserType !== "doctor"
+                                        ? `Blood Pressure: ${bloodReportData.bloodPressure}`
+                                        : bloodReportDetails.bloodPressure
+                                }
                                 name="bloodPressure"
                                 onChange={handleChange}
-                                disabled={getUserType === "individual"}
+                                disabled={getUserType !== "doctor"}
                             />
                             <Input
                                 label="Weight"
                                 type="text"
                                 placeholder=""
                                 crossOrigin={"origin"}
-                                value={bloodReportDetails.weight}
+                                value={
+                                    getUserType !== "doctor"
+                                        ? `Weight: ${bloodReportData.weight}`
+                                        : bloodReportDetails.weight
+                                }
                                 name="weight"
                                 onChange={handleChange}
-                                disabled={getUserType === "individual"}
+                                disabled={getUserType !== "doctor"}
                             />
                             <Input
                                 label="Height"
                                 type="text"
                                 placeholder=""
                                 crossOrigin={"origin"}
-                                value={bloodReportDetails.height}
+                                value={
+                                    getUserType !== "doctor"
+                                        ? `Height: ${bloodReportData.height}`
+                                        : bloodReportDetails.height
+                                }
                                 name="height"
                                 onChange={handleChange}
-                                disabled={getUserType === "individual"}
+                                disabled={getUserType !== "doctor"}
                             />
                             <Input
                                 label="Blood Sugar"
                                 type="text"
                                 placeholder=""
                                 crossOrigin={"origin"}
-                                value={bloodReportDetails.bloodSugar}
+                                value={
+                                    getUserType !== "doctor"
+                                        ? `Blood Sugar: ${bloodReportData.sugarLevel}`
+                                        : bloodReportDetails.bloodSugar
+                                }
                                 name="bloodSugar"
                                 onChange={handleChange}
-                                disabled={getUserType === "individual"}
+                                disabled={getUserType !== "doctor"}
                             />
                             <Input
                                 label="Hemoglobin"
                                 type="text"
                                 placeholder=""
                                 crossOrigin={"origin"}
-                                value={bloodReportDetails.hemoglobin}
+                                value={
+                                    getUserType !== "doctor"
+                                        ? `Hemoglobin: ${bloodReportData.hemoglobinCount}`
+                                        : bloodReportDetails.hemoglobin
+                                }
                                 name="hemoglobin"
                                 onChange={handleChange}
-                                disabled={getUserType === "individual"}
+                                disabled={getUserType !== "doctor"}
                             />
                             <Input
                                 label="Heart Rate"
                                 type="text"
                                 placeholder=""
                                 crossOrigin={"origin"}
-                                value={bloodReportDetails.heartRate}
+                                value={
+                                    getUserType !== "doctor"
+                                        ? `Heart Rate: ${bloodReportData.heartRateCount}`
+                                        : bloodReportDetails.heartRate
+                                }
                                 name="heartRate"
                                 onChange={handleChange}
-                                disabled={getUserType === "individual"}
+                                disabled={getUserType !== "doctor"}
                             />
                         </div>
                     </DialogBody>

@@ -1,24 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from "react";
-import { AuthContext } from "../../modules/auth/AuthContext";
-import MapWithAutocomplete from "../utils/Map";
-import { Button } from "@material-tailwind/react";
-import { searchDonors } from "../../modules/alerts/services";
-import { NearbyOrganizationType } from "../../modules/alerts/utils";
 import NearbyOrganizationList from "./NearbyOrganizationList";
+import { Button, Typography } from "@material-tailwind/react";
+import { searchDonors } from "../../alerts/services";
+import { LocationType, NearbyOrganizationType } from "../../alerts/utils";
+import { AuthContext } from "../../auth/AuthContext";
+import MapWithAutocomplete from "../../../components/utils/Map";
 
 const SearchDonors = ({
     onClose,
+    editSuccess,
+    setEditSuccess,
 }: {
     isOpen?: boolean;
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
+    editSuccess: boolean;
+    setEditSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(true);
     const { geoLocation } = useContext(AuthContext);
-    const [selectedLocation, setSelectedLocation] = useState<{
-        latitude: number;
-        longitude: number;
-    }>(geoLocation);
+    const [selectedLocation, setSelectedLocation] =
+        useState<LocationType>(geoLocation);
     const [address, setAddress] = useState<string>("");
     const handleClose = () => {
         setIsAlertPopupOpen(false);
@@ -28,12 +30,21 @@ const SearchDonors = ({
         }, 100);
     };
 
-    const [nearbyOrganizations, setNearbyOrganizations] = useState<NearbyOrganizationType[]>([]);
+    React.useEffect(() => {
+        if (editSuccess) {
+            handleClose();
+        }
+    }, [editSuccess]);
+
+    const [nearbyOrganizations, setNearbyOrganizations] = useState<
+        NearbyOrganizationType[]
+    >([]);
 
     const handleSearch = async () => {
         try {
             // Call searchDonors function to fetch nearby donors
-            const donorsData: NearbyOrganizationType[] = await searchDonors(selectedLocation);
+            const donorsData: NearbyOrganizationType[] =
+                await searchDonors(selectedLocation);
 
             // Update state with the retrieved donors data
             setNearbyOrganizations(donorsData);
@@ -58,21 +69,40 @@ const SearchDonors = ({
                                 address={address}
                             />
                             <div className=" flex justify-around">
-                                <Button placeholder={""} color="green" onClick={handleSearch}>
+                                <Button
+                                    placeholder={""}
+                                    color="green"
+                                    onClick={handleSearch}
+                                >
                                     Search
                                 </Button>
-                                <Button placeholder={""} color="red" onClick={handleClose}>
+                                <Button
+                                    placeholder={""}
+                                    color="red"
+                                    onClick={handleClose}
+                                >
                                     Close
                                 </Button>
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <NearbyOrganizationList nearbyOrganizations={nearbyOrganizations} />
-                            <Button placeholder={""} color="red" onClick={handleClose}>
+                        <div className="flex flex-col gap-2">
+                            <Typography placeholder={""} variant="h4">
+                                {" "}
+                                {nearbyOrganizations.length} Organizations Found
+                            </Typography>
+                            <NearbyOrganizationList
+                                setEditSuccess={setEditSuccess}
+                                nearbyOrganizations={nearbyOrganizations}
+                            />
+                            <Button
+                                placeholder={""}
+                                color="red"
+                                onClick={handleClose}
+                            >
                                 Close
                             </Button>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>

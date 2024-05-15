@@ -1,4 +1,5 @@
 import { LocationType } from "../alerts/utils";
+import { AppointmentDetailsType } from "../appointment/types";
 import { EventType } from "../events/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -23,10 +24,16 @@ export type IndividualDashboardType = {
         pincode: string;
     };
     phone: string;
-    receivedAlerts?: any[];
-    bloodReports?: any[];
-    eventsRegistered?: any[];
-    eventsAttended?: any[];
+    receivedAlerts: any[];
+    bloodReports: any[];
+    eventsRegistered: any[];
+    eventsAttended: {
+        eventId: string;
+        doctorId: string;
+        donationDate: Date;
+        bloodUnits: number;
+    }[];
+    appointments: AppointmentDetailsType[];
     createdAt?: string;
     updatedAt?: string;
     currentLocation?: LocationType
