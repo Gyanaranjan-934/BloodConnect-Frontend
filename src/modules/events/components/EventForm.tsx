@@ -25,12 +25,15 @@ const EventForm = ({
     onClose,
     eventDetails,
     setEventDetails,
+    isEdit,
 }: {
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
     eventDetails: EventInputType;
     setEventDetails: React.Dispatch<React.SetStateAction<EventInputType>>;
+    isEdit: boolean;
 }) => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(true);
+    const [isLoading, setIsLoading] = React.useState(false);
     const [selectedDoctors, setSelectedDoctors] = React.useState<
         DoctorDetailsType[]
     >([]);
@@ -54,6 +57,12 @@ const EventForm = ({
     const [eventStartDate, setEventStartDate] = React.useState<string>("");
     const [eventEndDate, setEventEndDate] = React.useState<string>("");
     const [doctorSearchQuery, setDoctorSearchQuery] = React.useState("");
+    const handleClose = () => {
+        setIsAlertPopupOpen(false);
+        setTimeout(() => {
+            onClose(false);
+        }, 80);
+    };
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -93,33 +102,37 @@ const EventForm = ({
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        try {
-            setEventDetails({
-                ...eventDetails,
-                address: address,
-                location: {
-                    latitude: selectedLocation.latitude,
-                    longitude: selectedLocation.longitude,
-                },
-                doctorsList: selectedDoctors.map((doctor) => doctor._id),
-                startDate: eventStartDate,
-                endDate: eventEndDate,
-            });
-            const createdEvent = await createEvent(eventDetails);
-            console.log(createdEvent);
-            if (createdEvent) {
-                console.log("Event created successfully");
+        if (isEdit) {
+            console.log(isEdit);
+        } else {
+            try {
+                setIsLoading(true);
+                const createdEvent = await createEvent(
+                    eventDetails,
+                    selectedLocation,
+                    selectedDoctors,
+                    address,
+                    eventStartDate,
+                    eventEndDate
+                );
+                console.log(createdEvent);
+                if (createdEvent) {
+                    console.log("Event created successfully");
+                }
+                handleClose();
+            } catch (error) {
+                console.log("Error creating event:", error);
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.log("Error creating event:", error);
         }
     };
     return (
         <div
-            className={`fixed inset-0 h-full w-full bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity ease-in duration-500 ${isAlertPopupOpen ? "opacity-100" : "opacity-0"}`}
+            className={`fixed inset-0 h-full w-full bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-40 transition-opacity ease-in duration-500 ${isAlertPopupOpen ? "opacity-100" : "opacity-0"}`}
         >
             <div
-                className={`bg-white rounded-lg shadow-md w-[75%] h-min max-h-[90%]  overflow-y-auto p-4 text-center z-10 transform transition-transform ease-in duration-500 ${isAlertPopupOpen ? "scale-100" : "scale-90"}`}
+                className={`bg-white rounded-lg shadow-md w-[75%] h-min max-h-[90%]  overflow-y-auto p-4 text-center z-50 transform transition-transform ease-in duration-500 ${isAlertPopupOpen ? "scale-100" : "scale-90"}`}
             >
                 <div className="flex flex-col gap-6">
                     <div className="flex justify-center items-center">
@@ -343,9 +356,7 @@ const EventForm = ({
                                                     (doctor) => (
                                                         <Chip
                                                             className="m-1"
-                                                            value={
-                                                                doctor.name
-                                                            }
+                                                            value={doctor.name}
                                                             onClose={() => {
                                                                 setSelectedDoctors(
                                                                     (
@@ -542,20 +553,22 @@ const EventForm = ({
                                     color="green"
                                     placeholder={""}
                                     type="submit"
+                                    loading={isLoading}
                                 >
-                                    Create Event
+                                    {isEdit
+                                        ? isLoading
+                                            ? "Updating Event..."
+                                            : "Update Event"
+                                        : isLoading
+                                          ? "Creating Event..."
+                                          : "Create Event"}
                                 </Button>
                                 <Button
                                     variant="gradient"
                                     size="sm"
                                     color="red"
                                     placeholder={""}
-                                    onClick={() => {
-                                        setIsAlertPopupOpen(false);
-                                        setTimeout(() => {
-                                            onClose(false);
-                                        }, 80);
-                                    }}
+                                    onClick={handleClose}
                                 >
                                     Cancel
                                 </Button>

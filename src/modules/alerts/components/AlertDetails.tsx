@@ -27,15 +27,23 @@ import {
 const AlertDetails = ({
     alertData,
     type,
+    setEditSuccess,
 }: {
     alertData: AlertType | ReceivedAlertType;
     type: "created" | "received";
+    setEditSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-    const handleDelete = () => {
+    const handleDelete = async() => {
         if (type === "created") {
-            deleteAlertSent(alert._id);
+            const response = await deleteAlertSent(alert._id);
+            if (response) {
+                setEditSuccess(true);
+            }
         } else {
-            deleteAlertReceived(alert._id);
+            const response = await deleteAlertReceived(alert._id);
+            if (response) {
+                setEditSuccess(true);
+            }
         }
     };
 
@@ -44,12 +52,18 @@ const AlertDetails = ({
             ? (alertData as AlertType)
             : (alertData as ReceivedAlertType);
 
-    const handleAccept = () => {
-        respondAlert(alert._id, true);
+    const handleAccept = async () => {
+        const response = await respondAlert(alert._id, true);
+        if (response) {
+            setEditSuccess(true);
+        }
     };
 
-    const handleReject = () => {
-        respondAlert(alert._id, false);
+    const handleReject = async () => {
+        const response = await respondAlert(alert._id, false);
+        if (response) {
+            setEditSuccess(true);
+        }
     };
 
     return (

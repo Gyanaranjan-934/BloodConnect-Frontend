@@ -6,13 +6,25 @@ import { getAlerts } from "../services";
 import ProgressBar from "../../../components/utils/ProgressBar";
 import ErrorPage from "../../../components/utils/ErrorPage";
 import { AlertType } from "../utils";
+import React from "react";
 
 const CreatedAlerts = () => {
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["createdAlerts"],
         queryFn: getAlerts,
     });
-    console.log(data);
+    const [editSuccess, setEditSuccess] = React.useState<boolean>(false);
+
+    React.useEffect(() => {
+        if (!data) {
+            refetch();
+        } else {
+            if (editSuccess) {
+                refetch();
+                setEditSuccess(false);
+            }
+        }
+    }, [editSuccess, data]);
     if (isLoading) {
         return <ProgressBar/>;
     }
@@ -33,6 +45,7 @@ const CreatedAlerts = () => {
                             key={alert._id}
                             alertData={alert}
                             type="created"
+                            setEditSuccess={setEditSuccess}
                         />
                     ))}
                 </List>

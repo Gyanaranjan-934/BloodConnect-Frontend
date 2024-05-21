@@ -30,10 +30,11 @@ const profileMenuItems = [
     },
 ];
 
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUserData") || "{}");
+
 export function ProfileMenu() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const { setIsAuthenticated, loggedInUser } = React.useContext(AuthContext);
-    console.log(loggedInUser);
+    const { setIsAuthenticated } = React.useContext(AuthContext);
     
     const closeMenu = () => setIsMenuOpen(false);
     const navigate = useNavigate();

@@ -184,7 +184,7 @@ export const deleteAlertReceived = async (alertId: string): Promise<boolean> => 
 export const respondAlert = async (
     alertId: string,
     isAccepted: boolean
-): Promise<void> => {
+): Promise<boolean> => {
     try {
         const config = await getConfig();
         const { data } = await axiosInstance.put(
@@ -200,11 +200,14 @@ export const respondAlert = async (
             } else {
                 toast("Alert rejected successfully", { type: "success" });
             }
+            return true;
         } else {
             toast("Alert not responded", { type: "error" });
+            return false;
         }
     } catch (error) {
         console.log("Error responding to alert:", error);
         toast("Error in responding to alert", { type: "error" });
+        return false;
     }
 };

@@ -7,12 +7,14 @@ export default function UsersListView({
     setSelectedUsers,
     submitSelectedDonors,
     handleClose,
+    isLoading,
 }: {
     nearByUsers: NearbyDonorType[];
     selectedUsers: NearbyDonorType[];
     setSelectedUsers: React.Dispatch<React.SetStateAction<NearbyDonorType[]>>;
     submitSelectedDonors: () => void;
     handleClose: () => void;
+    isLoading: boolean;
 }) {
     return (
         <div>
@@ -99,8 +101,9 @@ export default function UsersListView({
                             type="submit"
                             color="green"
                             onClick={submitSelectedDonors}
+                            loading={isLoading}
                         >
-                            Create Alert
+                            {isLoading ? "Sending..." : "Send"}
                         </Button>
                         <Button
                             placeholder={""}

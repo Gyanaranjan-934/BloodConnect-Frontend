@@ -1,5 +1,6 @@
 import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
 import { getConfig } from "../alerts/services";
+import { LocationType } from "../alerts/utils";
 import { BloodReportType, DoctorDetailsType } from "../auth/types";
 import {
     AttendDonorsByDoctorType,
@@ -8,9 +9,24 @@ import {
 } from "./types";
 import { EventInputType, EventType } from "./utils";
 
-export const createEvent = async (eventDetails: EventInputType) => {
+export const createEvent = async (
+    eventDetails: EventInputType,
+    selectedLocation: LocationType,
+    selectedDoctors: DoctorDetailsType[],
+    address: string,
+    eventStartDate: string,
+    eventEndDate: string
+) => {
     try {
         console.log(eventDetails);
+        eventDetails.location = {
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+        };
+        eventDetails.doctorsList = selectedDoctors.map((doctor) => doctor._id);
+        eventDetails.address = address;
+        eventDetails.startDate = eventStartDate;
+        eventDetails.endDate = eventEndDate;
         const config = await getConfig();
         const createdEvent = await axiosInstance.post(
             createEndPoint.createEvent(),
@@ -32,15 +48,51 @@ export const createEvent = async (eventDetails: EventInputType) => {
     }
 };
 
-export const getDoctors = async (): Promise<DoctorDetailsType[]> => {
+export const updateEvent = async (
+    eventDetails: EventInputType,
+    selectedLocation: LocationType,
+    selectedDoctors: DoctorDetailsType[],
+    address: string,
+    eventStartDate: string,
+    eventEndDate: string
+) => {
     try {
+        console.log(eventDetails);
+        eventDetails.location = {
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+        };
+        eventDetails.doctorsList = selectedDoctors.map((doctor) => doctor._id);
+        eventDetails.address = address;
+        eventDetails.startDate = eventStartDate;
+        eventDetails.endDate = eventEndDate;
         const config = await getConfig();
-        const doctors = await axiosInstance.get(
-            createEndPoint.getDoctors(),
+        const updatedEvent = await axiosInstance.put(
+            createEndPoint.updateEvent(),
+            {
+                eventDetails: JSON.stringify(eventDetails),
+            },
             {
                 headers: config.headers,
             }
         );
+        console.log(updatedEvent);
+        if (updatedEvent.data.success) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.log("Error updating event:", error);
+        return false;
+    }
+};
+
+export const getDoctors = async (): Promise<DoctorDetailsType[]> => {
+    try {
+        const config = await getConfig();
+        const doctors = await axiosInstance.get(createEndPoint.getDoctors(), {
+            headers: config.headers,
+        });
         console.log(doctors);
         return doctors.data.data;
     } catch (error) {
@@ -156,7 +208,7 @@ export const registerForEventByDoctor = async (
                 headers: config.headers,
             }
         );
-        if(response.data.success){
+        if (response.data.success) {
             return true;
         }
         return false;

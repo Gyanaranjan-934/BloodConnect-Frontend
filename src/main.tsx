@@ -33,10 +33,35 @@ if ("serviceWorker" in navigator) {
 //     storage: window.localStorage,
 // });
 
+const theme = {
+    tabsHeader: {
+        defaultProps: {
+            className: "",
+        },
+        styles: {
+            base: {
+                display: "flex",
+                position: "relative",
+                bg: "bg-blue-gray-50",
+                bgOpacity: "bg-opacity-60",
+                borderRadius: "rounded-lg",
+                p: "p-1",
+                zIndex: 1,
+            },
+            horizontal: {
+                flexDirection: "flex-row",
+            },
+            vertical: {
+                flexDirection: "flex-col",
+            },
+        },
+    },
+};
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
+            <ThemeProvider value={theme}>
                 <BrowserRouter>
                     <AuthProvider>
                         <App />

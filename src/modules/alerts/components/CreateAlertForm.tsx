@@ -21,6 +21,7 @@ const CreateAlertForm = ({
         useState<LocationType>(geoLocation);
     const [address, setAddress] = useState<string>("");
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(true);
+    const [isLoading, setIsLoading] = React.useState(false);
     const [alertDetails, setAlertDetails] =
         useState<AlertDetailsType>(InitialAlertDetails);
     const [localAccessToken, setAccessToken] = React.useState<string>("");
@@ -58,35 +59,46 @@ const CreateAlertForm = ({
     const submitAlertDetails = async (
         event: FormEvent<HTMLFormElement>
     ): Promise<void> => {
-        event.preventDefault();
-        console.log(selectedLocation);
-        console.log(address);
-        console.log(alertDetails);
-        setAlertDetails({
-            ...alertDetails,
-            address: address,
-            coordinates: {
-                latitude: selectedLocation.latitude,
-                longitude: selectedLocation.longitude,
-            },
-        });
-        setNearByUsers(
-            await createAlert(
-                alertDetails,
-                selectedLocation,
-                address,
-                localAccessToken,
-                loggedInUserType as "individual" | "organization"
-            )
-        );
-        setShowUsers(true);
+        try {
+            setIsLoading(true);
+            event.preventDefault();
+            setAlertDetails({
+                ...alertDetails,
+                address: address,
+                coordinates: {
+                    latitude: selectedLocation.latitude,
+                    longitude: selectedLocation.longitude,
+                },
+            });
+            setNearByUsers(
+                await createAlert(
+                    alertDetails,
+                    selectedLocation,
+                    address,
+                    localAccessToken,
+                    loggedInUserType as "individual" | "organization"
+                )
+            );
+            setShowUsers(true);
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setIsLoading(false);
+        }
     };
 
     const submitSelectedDonors = async (): Promise<void> => {
-        console.log(selectedUsers);
-        sendSelectedDonors(selectedUsers);
-        handleClose();
-        toast("Alert sent successfully", { type: "success" });
+        try {
+            setIsLoading(true);
+            sendSelectedDonors(selectedUsers);
+            handleClose();
+            toast("Alert sent successfully", { type: "success" });
+        } catch (error) {
+            console.log(error);
+            toast("Error in sending alert", { type: "error" });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -107,6 +119,7 @@ const CreateAlertForm = ({
                             setAddress={setAddress}
                             submitAlertDetails={submitAlertDetails}
                             setSelectedLocation={setSelectedLocation}
+                            isLoading={isLoading}
                         />
                     )}
                     {showUsers && (
@@ -116,6 +129,7 @@ const CreateAlertForm = ({
                             setSelectedUsers={setSelectedUsers}
                             submitSelectedDonors={submitSelectedDonors}
                             handleClose={handleClose}
+                            isLoading={isLoading}
                         />
                     )}
                 </div>

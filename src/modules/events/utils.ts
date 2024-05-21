@@ -21,6 +21,7 @@ export type EventInputType = {
         latitude: number;
         longitude: number;
     };
+    eventId?: string;
 };
 
 export const InitialEventInputDetails: EventInputType = {

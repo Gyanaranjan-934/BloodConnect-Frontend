@@ -17,6 +17,7 @@ import ErrorBoundary from "../../../ErrorBoundary";
 import SearchDonors from "../../appointment/components/SearchDonors";
 import DonationHistory from "./DonationHistory";
 import AppointmentTable from "./AppointmentTable";
+import userIcon from "../../../assets/user.png";
 
 const IndividualDashboard = () => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
@@ -110,7 +111,7 @@ const IndividualDashboard = () => {
                                     <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-300">
                                         <Avatar
                                             placeholder={"Profile"}
-                                            src={individualDashboard?.avatar}
+                                            src={individualDashboard?.avatar || userIcon}
                                             alt="Image"
                                             className="object-cover w-full h-full"
                                         />

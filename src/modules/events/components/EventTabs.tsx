@@ -58,7 +58,7 @@ function EventTabs() {
     });
     const orgEvents = (data ? data : []) as EventType[];
     console.log(orgEvents);
-    
+
     const currentDate = new Date();
     const today = new Date(
         currentDate.getFullYear(),

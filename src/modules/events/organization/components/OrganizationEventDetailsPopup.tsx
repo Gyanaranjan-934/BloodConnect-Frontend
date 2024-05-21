@@ -7,15 +7,16 @@ import {
 } from "@material-tailwind/react";
 import React from "react";
 import { EventType } from "../../utils";
-
 export default function OrganizationEventDetailsPopup({
     open,
     setOpen,
     event,
-}:{
+    setEditEnabled,
+}: {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     event: EventType;
+    setEditEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
     const handleOpen = () => setOpen(!open);
 
@@ -52,12 +53,16 @@ export default function OrganizationEventDetailsPopup({
                         placeholder={""}
                         variant="gradient"
                         color="green"
-                        onClick={handleOpen}
+                        onClick={() => {
+                            setEditEnabled(true);
+                            setOpen(false);
+                        }}
                     >
-                        <span>Confirm</span>
+                        <span>Update</span>
                     </Button>
                 </DialogFooter>
             </Dialog>
+            
         </>
     );
 }

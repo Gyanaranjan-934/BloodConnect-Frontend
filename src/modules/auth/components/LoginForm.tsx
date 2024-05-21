@@ -30,6 +30,7 @@ const LoginFormComponent = ({
         password: "",
         userType: "individual",
     });
+    const [isLoading, setIsLoading] = React.useState(false);
 
     const {
         setIsAuthenticated,
@@ -45,6 +46,7 @@ const LoginFormComponent = ({
             userDetails.userType === "organization"
         ) {
             try {
+                setIsLoading(true);
                 const auth = getAuth(firebaseApp);
                 const loggedInUser = await signInWithEmailAndPassword(
                     auth,
@@ -85,12 +87,15 @@ const LoginFormComponent = ({
             } catch (error: any) {
                 console.error(error);
                 toast.error(error?.message || "An error occured");
+            } finally{
+                setIsLoading(false);
             }
         } else if (
             userDetails.userType === "doctor" ||
             userDetails.userType === "admin"
         ) {
             try {
+                setIsLoading(true);
                 const response =
                     userDetails.userType === "doctor"
                         ? await loginUser(userDetails)
@@ -98,8 +103,6 @@ const LoginFormComponent = ({
                 if (response.success) {
                     setIsAuthenticated(true);
                     setLoggedInUserType(userDetails.userType);
-                    console.log(response.userData);
-                    
                     setLoggedInUser(response.userData);
                     toast("Login successful", { type: "success" });
                     openAuthPopup(false);
@@ -112,6 +115,8 @@ const LoginFormComponent = ({
             } catch (error) {
                 console.log(error);
                 toast("An error occured", { type: "error" });
+            } finally{
+                setIsLoading(false);
             }
         }
     };
@@ -207,8 +212,9 @@ const LoginFormComponent = ({
                                     className="w-full"
                                     placeholder={""}
                                     type="submit"
+                                    loading={isLoading}
                                 >
-                                    Signin
+                                    {isLoading ? "Logging in..." : "Login"}
                                 </Button>
                             </div>
                         </form>

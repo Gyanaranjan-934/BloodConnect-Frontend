@@ -19,6 +19,7 @@ export default function AlertForm({
     setAddress,
     submitAlertDetails,
     setSelectedLocation,
+    isLoading,
 }: {
     alertDetails: AlertDetailsType;
     setAlertDetails: React.Dispatch<React.SetStateAction<AlertDetailsType>>;
@@ -32,6 +33,7 @@ export default function AlertForm({
     setAddress: React.Dispatch<React.SetStateAction<string>>;
     setSelectedLocation: React.Dispatch<React.SetStateAction<LocationType>>;
     submitAlertDetails: (event: FormEvent<HTMLFormElement>) => void;
+    isLoading: boolean;
 }) {
     return (
         <div>
@@ -177,8 +179,9 @@ export default function AlertForm({
                         title="Create Alert"
                         type="submit"
                         color="green"
+                        loading={isLoading}
                     >
-                        Create Alert
+                        {isLoading ? "Fetching Nearby Users..." : "Create Alert"}
                     </Button>
                     <Button
                         placeholder={""}
