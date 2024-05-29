@@ -4,6 +4,9 @@ const host = import.meta.env.VITE_SERVER_URL;
 
 export const axiosInstance = axios.create({
     baseURL: host,
+    headers: {
+        "Content-Type": "application/json",
+    },
 });
 
 export default {
