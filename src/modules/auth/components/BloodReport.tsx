@@ -14,6 +14,7 @@ import { fillBloodReport } from "../../events/services";
 import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getBloodReports } from "../../dashboard/services";
+import { AuthContext } from "../AuthContext";
 
 function BloodReport({
     open,
@@ -27,17 +28,19 @@ function BloodReport({
     eventId?: string;
 }) {
     const handleOpen = () => setOpen(!open);
+    const { loggedInUserType } = React.useContext(AuthContext);
+    const isDoctor = loggedInUserType === "doctor" || getUserType === "doctor";
 
     const { data, refetch } = useQuery({
         queryKey: ["bloodReport"],
-        queryFn: getUserType !== "doctor" ? getBloodReports : () => [] as [],
+        queryFn: !isDoctor ? getBloodReports : () => [] as [],
     });
 
     React.useEffect(() => {
         if (!data) {
             refetch();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     const bloodReportData =
@@ -112,7 +115,7 @@ function BloodReport({
                 <form onSubmit={handleSubmit}>
                     <DialogBody placeholder={""}>
                         <div className="flex flex-col gap-4">
-                            {getUserType === "doctor" && (
+                            {isDoctor && (
                                 <Input
                                     crossOrigin={"origin"}
                                     type="text"
@@ -127,7 +130,7 @@ function BloodReport({
                                             bloodUnits: e.target.value,
                                         })
                                     }
-                                    disabled={getUserType !== "doctor"}
+                                    disabled={!isDoctor}
                                 />
                             )}
                             <Input
@@ -137,13 +140,13 @@ function BloodReport({
                                 crossOrigin={"origin"}
                                 title="Blood Pressure"
                                 value={
-                                    getUserType !== "doctor"
+                                    !isDoctor
                                         ? `Blood Pressure: ${bloodReportData.bloodPressure}`
                                         : bloodReportDetails.bloodPressure
                                 }
                                 name="bloodPressure"
                                 onChange={handleChange}
-                                disabled={getUserType !== "doctor"}
+                                disabled={!isDoctor}
                             />
                             <Input
                                 label="Weight"
@@ -151,13 +154,13 @@ function BloodReport({
                                 placeholder=""
                                 crossOrigin={"origin"}
                                 value={
-                                    getUserType !== "doctor"
+                                    !isDoctor
                                         ? `Weight: ${bloodReportData.weight}`
                                         : bloodReportDetails.weight
                                 }
                                 name="weight"
                                 onChange={handleChange}
-                                disabled={getUserType !== "doctor"}
+                                disabled={!isDoctor}
                             />
                             <Input
                                 label="Height"
@@ -165,13 +168,13 @@ function BloodReport({
                                 placeholder=""
                                 crossOrigin={"origin"}
                                 value={
-                                    getUserType !== "doctor"
+                                    !isDoctor
                                         ? `Height: ${bloodReportData.height}`
                                         : bloodReportDetails.height
                                 }
                                 name="height"
                                 onChange={handleChange}
-                                disabled={getUserType !== "doctor"}
+                                disabled={!isDoctor}
                             />
                             <Input
                                 label="Blood Sugar"
@@ -179,13 +182,13 @@ function BloodReport({
                                 placeholder=""
                                 crossOrigin={"origin"}
                                 value={
-                                    getUserType !== "doctor"
+                                    !isDoctor
                                         ? `Blood Sugar: ${bloodReportData.sugarLevel}`
                                         : bloodReportDetails.bloodSugar
                                 }
                                 name="bloodSugar"
                                 onChange={handleChange}
-                                disabled={getUserType !== "doctor"}
+                                disabled={!isDoctor}
                             />
                             <Input
                                 label="Hemoglobin"
@@ -193,13 +196,13 @@ function BloodReport({
                                 placeholder=""
                                 crossOrigin={"origin"}
                                 value={
-                                    getUserType !== "doctor"
+                                    !isDoctor
                                         ? `Hemoglobin: ${bloodReportData.hemoglobinCount}`
                                         : bloodReportDetails.hemoglobin
                                 }
                                 name="hemoglobin"
                                 onChange={handleChange}
-                                disabled={getUserType !== "doctor"}
+                                disabled={!isDoctor}
                             />
                             <Input
                                 label="Heart Rate"
@@ -207,18 +210,18 @@ function BloodReport({
                                 placeholder=""
                                 crossOrigin={"origin"}
                                 value={
-                                    getUserType !== "doctor"
+                                    !isDoctor
                                         ? `Heart Rate: ${bloodReportData.heartRateCount}`
                                         : bloodReportDetails.heartRate
                                 }
                                 name="heartRate"
                                 onChange={handleChange}
-                                disabled={getUserType !== "doctor"}
+                                disabled={!isDoctor}
                             />
                         </div>
                     </DialogBody>
                     <DialogFooter placeholder={""}>
-                        {getUserType === "doctor" ? (
+                        {isDoctor ? (
                             <>
                                 <Button
                                     placeholder={""}

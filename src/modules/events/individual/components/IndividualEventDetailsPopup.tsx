@@ -15,6 +15,7 @@ import { calculateDistance } from "../../../../services/calculateDistance";
 import { AuthContext } from "../../../auth/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRoad } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
 
 export default function IndividualEventDetailsPopup({
     open,
@@ -28,11 +29,23 @@ export default function IndividualEventDetailsPopup({
     isRegistered: boolean;
 }) {
     const handleOpen = () => setOpen(!open);
+    const [isLoading, setLoading] = React.useState<boolean>(false);
     const [registered, setRegistered] = React.useState<boolean>(isRegistered);
     const handleRegister = async () => {
-        const response = await registerForEventByIndividual(event._id);
-        if (response) {
-            setRegistered(true);
+        try {
+            setLoading(true);
+            const response = await registerForEventByIndividual(event._id);
+            if (response) {
+                setRegistered(true);
+            }else{
+                toast.error("Error in registering for event");
+            }
+        } catch (error) {
+            console.log("Error registering for event:", error);
+            toast.error("Error in registering for event");
+        } finally {
+            setOpen(false);
+            setLoading(false);
         }
     };
     const { geoLocation } = React.useContext(AuthContext);
@@ -134,7 +147,7 @@ export default function IndividualEventDetailsPopup({
                                 ? "Attended"
                                 : registered
                                   ? "Registered"
-                                  : "Register"}
+                                  : isLoading ? "Registering..." : "Register"}
                         </span>
                     </Button>
                 </DialogFooter>

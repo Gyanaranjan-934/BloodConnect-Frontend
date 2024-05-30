@@ -19,15 +19,23 @@ export default function DoctorDetailsPopup({
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     doctor: DoctorType;
 }) {
+    const [isLoading, setLoading] = React.useState<boolean>(false);
     const handleOpen = () => setOpen(!open);
     const handleVerify = async () => {
-        const response = await verifyDoctor(doctor._id);
-        if (response) {
-            toast("Doctor verified successfully", { type: "success" });
-
-            setOpen(false);
-        } else {
-            toast("Doctor not verified", { type: "error" });
+        try {
+            setLoading(true);
+            const response = await verifyDoctor(doctor._id);
+            if (response) {
+                toast("Doctor verified successfully", { type: "success" });
+                setOpen(false);
+            } else {
+                toast("Doctor not verified", { type: "error" });
+            }
+        } catch (error) {
+            console.log("Error verifying doctor:", error);
+            toast("Error in verifying doctor", { type: "error" });
+        } finally {
+            setLoading(false);
         }
     };
     return (
@@ -61,7 +69,7 @@ export default function DoctorDetailsPopup({
                     onClick={handleVerify}
                     disabled={doctor.isVerified}
                 >
-                    <span>{doctor.isVerified ? "Verified" : "Verify"}</span>
+                    <span>{doctor.isVerified ? "Verified" : isLoading ? "Verifying..." : "Verify"}</span>
                 </Button>
             </DialogFooter>
         </Dialog>

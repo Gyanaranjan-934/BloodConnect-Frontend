@@ -88,6 +88,7 @@ const LoginFormComponent = ({
                 console.error(error);
                 toast.error(error?.message || "An error occured");
             } finally{
+                openAuthPopup(false);
                 setIsLoading(false);
             }
         } else if (

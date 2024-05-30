@@ -10,7 +10,8 @@ function StepperComponent({
     handlePrev,
     setIsLastStep,
     setIsFirstStep,
-    setActiveStep
+    setActiveStep,
+    isLoading
 }:{
     activeStep: number,
     isLastStep: boolean,
@@ -19,7 +20,8 @@ function StepperComponent({
     handlePrev: () => void,
     setIsLastStep: React.Dispatch<React.SetStateAction<boolean>>,
     setIsFirstStep: React.Dispatch<React.SetStateAction<boolean>>,
-    setActiveStep: React.Dispatch<React.SetStateAction<number>>
+    setActiveStep: React.Dispatch<React.SetStateAction<number>>,
+    isLoading: boolean
 }) {
     return (
         <div className="mt-8">
@@ -73,8 +75,9 @@ function StepperComponent({
                         type="submit"
                         disabled={!isLastStep}
                         placeholder={""}
+                        loading={isLoading}
                     >
-                        Submit
+                        {isLoading ? "Submitting..." : "Submit"}
                     </Button>
                 )}
             </div>

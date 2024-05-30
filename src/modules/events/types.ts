@@ -53,7 +53,11 @@ export type EventDetailsType = {
     updatedAt: string;
     doctors: EventDetailsDoctorType[];
     donorsRegisteredBySelf: EventDetailsDonorType[];
-    donorsRegisteredByDoctor: DonorRegisteredByDoctor[];
+    donorsRegisteredByDoctor: {
+        user: DonorRegisteredByDoctor;
+        doctor: string;
+        timeOfRegistration: string;
+    }[];
     donorsAttended: {
         donorId: EventDetailsDonorType;
         doctorId: EventDetailsDoctorType;

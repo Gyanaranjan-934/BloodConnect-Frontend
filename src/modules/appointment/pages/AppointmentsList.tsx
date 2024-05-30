@@ -274,7 +274,7 @@ export default function AppointmentsList() {
                                                                 )}
 
                                                                 {appointment.status !==
-                                                                    "rejected" && (
+                                                                    "declined" && (
                                                                     <Button
                                                                         placeholder={
                                                                             ""
@@ -288,7 +288,7 @@ export default function AppointmentsList() {
                                                                                 false
                                                                             );
                                                                             appointment.status =
-                                                                                "rejected";
+                                                                                "declined";
                                                                         }}
                                                                     >
                                                                         Reject

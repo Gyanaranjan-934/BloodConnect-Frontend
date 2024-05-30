@@ -25,7 +25,12 @@ import {
 import { DoctorType } from "../types";
 import { registerDoctor } from "../services";
 
-const DoctorRegisterForm = () => {
+const DoctorRegisterForm = ({
+    openAuthPopup
+}:{
+    openAuthPopup: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+    const [isLoading, setLoading] = React.useState<boolean>(false);
     const [doctorDetails, setDoctorDetails] =
         useState<DoctorType>(DefaultDoctor);
 
@@ -71,11 +76,19 @@ const DoctorRegisterForm = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            await registerDoctor(doctorDetails);
-            <Navigate to={"/login"} />;
+            setLoading(true);
+            const res = await registerDoctor(doctorDetails);
+            if(res){
+                <Navigate to={"/login"} />;
+            }else{
+                toast("An error occured", { type: "error" });
+            }
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
+        }finally{
+            openAuthPopup(false);
+            setLoading(false);
         }
     };
 
@@ -267,8 +280,9 @@ const DoctorRegisterForm = () => {
                             color="green"
                             placeholder={""}
                             type="submit"
+                            loading={isLoading}
                         >
-                            Register
+                            {isLoading ? "Registering..." : "Register"}
                         </Button>
                         <Button
                             variant="gradient"

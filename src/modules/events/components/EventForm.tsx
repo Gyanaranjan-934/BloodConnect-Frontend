@@ -123,6 +123,7 @@ const EventForm = ({
             } catch (error) {
                 console.log("Error creating event:", error);
             } finally {
+                onClose(false);
                 setIsLoading(false);
             }
         }

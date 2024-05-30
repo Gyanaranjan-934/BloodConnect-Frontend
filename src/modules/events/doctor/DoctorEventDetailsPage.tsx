@@ -2,7 +2,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useParams } from "react-router-dom";
 import { getAttendedDonors, getEventDetails } from "../services";
-import { AttendDonorsByDoctorType, EventDetailsDonorType, EventDetailsType } from "../types";
+import {
+    AttendDonorsByDoctorType,
+    EventDetailsDonorType,
+    EventDetailsType,
+} from "../types";
 import {
     Avatar,
     Button,
@@ -274,11 +278,15 @@ function DonorEventDetailsPage() {
                             placeholder={""}
                             className="h-full w-full shadow rounded"
                         >
+                            <Typography variant="h4" placeholder={""}>
+                                {eventDetails.donorsRegisteredByDoctor.length}{" "}
+                                Donors Registered By Doctor
+                            </Typography>
                             <List placeholder={""}>
                                 {eventDetails.donorsRegisteredByDoctor.map(
                                     (donor) => (
                                         <ListItem
-                                            key={donor._id}
+                                            key={donor.user._id}
                                             className="flex items-center gap-2"
                                             placeholder={""}
                                         >
@@ -287,21 +295,21 @@ function DonorEventDetailsPage() {
                                                     variant="h6"
                                                     placeholder={""}
                                                 >
-                                                    {donor.name}
+                                                    {donor.user.name}
                                                 </Typography>
                                                 <div className="flex gap-2">
                                                     <Typography
                                                         variant="small"
                                                         placeholder={""}
                                                     >
-                                                        {donor.email}
+                                                        {donor.user.email}
                                                     </Typography>
                                                     |
                                                     <Typography
                                                         variant="small"
                                                         placeholder={""}
                                                     >
-                                                        {donor.phone}
+                                                        {donor.user.phone}
                                                     </Typography>
                                                 </div>
                                             </div>
@@ -314,6 +322,10 @@ function DonorEventDetailsPage() {
                             placeholder={""}
                             className="h-full w-full shadow rounded"
                         >
+                            <Typography variant="h4" placeholder={""}>
+                                {eventDetails.donorsAttended.length} Donors
+                                Attended By Doctor
+                            </Typography>
                             <List placeholder={""}>
                                 {donorsAttended.map((donor) => (
                                     <ListItem
@@ -340,7 +352,8 @@ function DonorEventDetailsPage() {
                                                     variant="small"
                                                     placeholder={""}
                                                 >
-                                                    {donor.donorId.phone || "No Phone number"}
+                                                    {donor.donorId.phone ||
+                                                        "No Phone number"}
                                                 </Typography>
                                             </div>
                                         </div>

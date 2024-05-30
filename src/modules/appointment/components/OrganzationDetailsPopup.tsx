@@ -18,21 +18,7 @@ import { NearbyOrganizationType } from "../../alerts/utils";
 import { AuthContext } from "../../auth/AuthContext";
 import { createAppointment } from "../services";
 import { toast } from "react-toastify";
-
-const TIME_SLOTS = [
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-];
+import { TIME_SLOTS } from "../utils";
 
 export default function OrganzationDetailsPopup({
     open,
@@ -45,6 +31,7 @@ export default function OrganzationDetailsPopup({
     organization: NearbyOrganizationType | null;
     setEditSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+    const [isLoading, setLoading] = React.useState<boolean>(false);
     const handleOpen = () => setOpen(!open);
     const [distance, setDistance] = React.useState<number>(0);
     const [selectedDate, setSelectedDate] = React.useState<string>("");
@@ -65,17 +52,28 @@ export default function OrganzationDetailsPopup({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [organization]);
 
-    const handleAppointmentRegistration = async () => {
-        const response = await createAppointment({
-            appointmentDate: selectedDate,
-            appointmentTime: selectedTime,
-            organizationId: organization?._id,
-        });
-        if (response) {
-            setEditSuccess(true);
-            setOpen(false);
-        }else{
-            toast("Appointment not registered", { type: "error" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleAppointmentRegistration = async (e: any) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            const response = await createAppointment({
+                appointmentDate: selectedDate,
+                appointmentTime: selectedTime,
+                organizationId: organization?._id,
+            });
+            if (response) {
+                setEditSuccess(true);
+                setOpen(false);
+                toast("Appointment registered successfully", { type: "success" });
+            }else{
+                toast("Appointment not registered", { type: "error" });
+            }
+        } catch (error) {
+            console.log("Error creating appointment:", error);
+            toast("Error in creating appointment", { type: "error" });
+        } finally {
+            setLoading(false);
         }
     };
     return (
@@ -191,8 +189,9 @@ export default function OrganzationDetailsPopup({
                                 variant="gradient"
                                 color="green"
                                 type="submit"
+                                loading={isLoading}
                             >
-                                <span>Book Appointment</span>
+                                <span>{isLoading ? "Booking..." : "Book Appointment"}</span>
                             </Button>
                         </DialogFooter>
                     </form>

@@ -24,10 +24,12 @@ const TABLEHEAD = [
 ];
 
 export default function EventsTable({
+    isLoading,
     eventDetails,
     handleVerify,
     handleDelete,
 }: {
+    isLoading: boolean;
     eventDetails: {
         events: EventType[];
         pageNo: number;
@@ -213,7 +215,7 @@ export default function EventsTable({
                                                                 true;
                                                         }}
                                                     >
-                                                        Verify
+                                                        {isLoading ? "Verifying..." : "Verify"}
                                                     </Button>
                                                 )}
                                                 <Button
@@ -225,7 +227,7 @@ export default function EventsTable({
                                                         handleDelete(event._id);
                                                     }}
                                                 >
-                                                    Delete
+                                                    {isLoading ? "Deleting..." : "Delete"}
                                                 </Button>
                                             </div>
                                         </PopoverContent>

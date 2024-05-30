@@ -29,7 +29,12 @@ import { OrganizationType } from "../types";
 import { registerOrganization } from "../services";
 import { AuthContext } from "../AuthContext";
 
-export function OrganizationRegisterForm() {
+export function OrganizationRegisterForm({
+    openAuthPopup
+}:{
+    openAuthPopup: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+    const [isLoading, setLoading] = React.useState<boolean>(false);
     const [activeStep, setActiveStep] = React.useState(0);
     const [isLastStep, setIsLastStep] = React.useState(false);
     const [isFirstStep, setIsFirstStep] = React.useState(false);
@@ -58,6 +63,7 @@ export function OrganizationRegisterForm() {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
+            setLoading(true);
             const auth = getAuth(firebaseApp);
 
             const userCredential = await createUserWithEmailAndPassword(
@@ -76,13 +82,20 @@ export function OrganizationRegisterForm() {
                     }
                 );
 
-                await registerOrganization(organizationDetails,geoLocation);                
-
-                <Navigate to={"/login"} />;
+                const res = await registerOrganization(organizationDetails,geoLocation);              
+                if(res){
+                    toast("Organization registered successfully", { type: "success" });
+                    <Navigate to={"/login"} />;
+                }else{
+                    toast("An error occured", { type: "error" });
+                }
             }
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
+        }finally{
+            openAuthPopup(false);
+            setLoading(false);
         }
     };
     const formHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -464,6 +477,7 @@ export function OrganizationRegisterForm() {
                     </div>
                 )}
                 <StepperComponent
+                    isLoading={isLoading}
                     activeStep={activeStep}
                     isLastStep={isLastStep}
                     isFirstStep={isFirstStep}

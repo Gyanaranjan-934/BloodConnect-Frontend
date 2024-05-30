@@ -5,6 +5,7 @@ import { searchDonors } from "../../alerts/services";
 import { LocationType, NearbyOrganizationType } from "../../alerts/utils";
 import { AuthContext } from "../../auth/AuthContext";
 import MapWithAutocomplete from "../../../components/utils/Map";
+import { toast } from "react-toastify";
 
 const SearchDonors = ({
     onClose,
@@ -17,6 +18,7 @@ const SearchDonors = ({
     setEditSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(true);
+    const [isLoading, setLoading] = React.useState(false);
     const { geoLocation } = useContext(AuthContext);
     const [selectedLocation, setSelectedLocation] =
         useState<LocationType>(geoLocation);
@@ -33,7 +35,7 @@ const SearchDonors = ({
         if (editSuccess) {
             handleClose();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editSuccess]);
 
     const [nearbyOrganizations, setNearbyOrganizations] = useState<
@@ -42,14 +44,15 @@ const SearchDonors = ({
 
     const handleSearch = async () => {
         try {
-            // Call searchDonors function to fetch nearby donors
-            const donorsData: NearbyOrganizationType[] =
-                await searchDonors(selectedLocation);
-
-            // Update state with the retrieved donors data
+            setLoading(true);
+            const donorsData: NearbyOrganizationType[] = await searchDonors(selectedLocation);
             setNearbyOrganizations(donorsData);
+            toast.success(`${donorsData.length} donors found`);
         } catch (error) {
             console.log("Error fetching nearby donors:", error);
+            toast("Error in fetching nearby donors", { type: "error" });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -73,8 +76,9 @@ const SearchDonors = ({
                                     placeholder={""}
                                     color="green"
                                     onClick={handleSearch}
+                                    loading={isLoading}
                                 >
-                                    Search
+                                    {isLoading ? "Searching..." : "Search"}
                                 </Button>
                                 <Button
                                     placeholder={""}

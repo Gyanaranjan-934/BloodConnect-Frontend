@@ -16,6 +16,7 @@ import PaginationComponent from "../components/PaginationComponent";
 
 export default function AllEvents() {
     const [pageNo, setPageNo] = React.useState(0);
+    const [loading, setLoading] = React.useState(false);
 
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["events", pageNo],
@@ -39,22 +40,38 @@ export default function AllEvents() {
     });
 
     const handleVerify = async (eventId: string) => {
-        const response = await verifyEvent(eventId);
-        if (response) {
-            toast("Event verified successfully", { type: "success" });
-            setEditSuccess(true);
-        } else {
-            toast("Event not verified", { type: "error" });
+        try {
+            setLoading(true);
+            const response = await verifyEvent(eventId);
+            if (response) {
+                toast("Event verified successfully", { type: "success" });
+                setEditSuccess(true);
+            } else {
+                toast("Event not verified", { type: "error" });
+            }
+        } catch (error) {
+            console.log("Error verifying event:", error);
+            toast("Error in verifying event", { type: "error" });
+        } finally{
+            setLoading(false);
         }
     };
 
     const handleDelete = async (eventId: string) => {
-        const response = await deleteEvent(eventId);
-        if (response) {
-            toast("Event deleted successfully", { type: "success" });
-            setEditSuccess(true);
-        } else {
-            toast("Event not deleted", { type: "error" });
+        try {
+            setLoading(true);
+            const response = await deleteEvent(eventId);
+            if (response) {
+                toast("Event deleted successfully", { type: "success" });
+                setEditSuccess(true);
+            } else {
+                toast("Event not deleted", { type: "error" });
+            }
+        } catch (error) {
+            console.log("Error deleting event:", error);
+            toast("Error in deleting event", { type: "error" });
+        } finally{
+            setLoading(false);
         }
     };
 
@@ -86,6 +103,7 @@ export default function AllEvents() {
                 {eventDetails && (
                     <CardBody placeholder={""} className=" overflow-x-auto">
                         <EventsTable
+                            isLoading={loading}
                             eventDetails={eventDetails}
                             handleVerify={handleVerify}
                             handleDelete={handleDelete}

@@ -76,12 +76,12 @@ export const RegistrationPage = ({
                     )}
                     {user === "organization" && (
                         <ErrorBoundary fallback={<div>Something went wrong</div>}>
-                            <OrganizationRegisterForm />
+                            <OrganizationRegisterForm openAuthPopup={openAuthPopup} />
                         </ErrorBoundary>
                     )}
                     {user === "doctor" && (
                         <ErrorBoundary fallback={<div>Something went wrong</div>}>
-                            <DoctorRegisterForm />
+                            <DoctorRegisterForm openAuthPopup={openAuthPopup} />
                         </ErrorBoundary>
                     )}
                 </div>

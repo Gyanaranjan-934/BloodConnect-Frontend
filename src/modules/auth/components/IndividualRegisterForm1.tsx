@@ -43,6 +43,7 @@ export default function IndividualRegisterForm({
         );
 
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
+    const [isLoading, setLoading] = React.useState<boolean>(false);
 
     const [passwordStrength, setPasswordStrength] = React.useState<
         "Strong" | "Weak"
@@ -78,6 +79,7 @@ export default function IndividualRegisterForm({
         event.preventDefault();
         const auth = getAuth(firebaseApp);
         try {
+            setLoading(true);
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 individualDetails.email,
@@ -117,6 +119,8 @@ export default function IndividualRegisterForm({
         } catch (error: any) {
             console.error(error);
             toast(error?.message || "An error occured", { type: "error" });
+        }finally{
+            setLoading(false);
         }
     };
     return (
@@ -245,8 +249,8 @@ export default function IndividualRegisterForm({
                         >
                             Cancel
                         </Button>
-                        <Button placeholder={""} color="green" type="submit">
-                            Register
+                        <Button placeholder={""} color="green" type="submit" loading={isLoading}>
+                            {isLoading ? "Registering..." : "Register"}
                         </Button>
                     </div>
                 </div>
