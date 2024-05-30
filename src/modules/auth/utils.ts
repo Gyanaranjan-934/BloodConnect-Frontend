@@ -1,6 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { DoctorType, IndividualFormType, OrganizationType, BloodReportType, IndividualRegisterFormType } from "./types";
-
+import {
+    DoctorType,
+    IndividualFormType,
+    OrganizationType,
+    BloodReportType,
+    IndividualRegisterFormType,
+} from "./types";
 
 export const DefaultIndividualForm: IndividualFormType = {
     name: "",
@@ -25,7 +29,6 @@ export const DefaultIndividualForm: IndividualFormType = {
     confirmPassword: "",
 };
 
-
 export const DefaultDoctor: DoctorType = {
     name: "",
     email: "",
@@ -36,7 +39,6 @@ export const DefaultDoctor: DoctorType = {
     password: "",
     confirmPassword: "",
 };
-
 
 export const DefaultOrganization: OrganizationType = {
     name: "",

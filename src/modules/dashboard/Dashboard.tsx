@@ -3,9 +3,9 @@ import { AuthContext } from "../auth/AuthContext";
 import IndividualDashboard from "./components/IndividualDashboard";
 import OrganizationDashboard from "./components/OrganizationDashboard";
 import DoctorDashboard from "./components/DoctorDashboard";
-import ErrorBoundary from "../../ErrorBoundary";
 import { DashboardProvider } from "./DashboardContext";
 import { Adminpage } from "../admin/AdminPage";
+import { ErrorBoundary } from "react-error-boundary";
 
 const Dashboard = () => {
     const { loggedInUserType } = React.useContext(AuthContext);
@@ -37,7 +37,9 @@ const Dashboard = () => {
         <>
             <DashboardProvider>
                 <div className="flex flex-col h-screen bg-gray-100 w-full">
-                    <ErrorBoundary>{dashboardComponent}</ErrorBoundary>
+                    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+                        {dashboardComponent}
+                    </ErrorBoundary>
                 </div>
             </DashboardProvider>
         </>

@@ -6,7 +6,6 @@ import EventForm from "../../components/EventForm";
 
 export default function EventListItem({
     event,
-    setEvents,
 }: {
     event: EventType;
     setEvents: React.Dispatch<React.SetStateAction<EventType[]>>;

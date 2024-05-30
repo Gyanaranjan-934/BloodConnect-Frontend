@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getToken } from "firebase/messaging";
 import React, {
@@ -62,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async function requestPermission() {
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
-            const token = await getToken(messaging, {
+            await getToken(messaging, {
                 vapidKey:
                     import.meta.env.VITE_FIREBASE_VAPID_KEY,
             });

@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
-const ProtectedRoute = ({ component: Component, ...rest }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ProtectedRoute = ({ component: Component, ...rest }: any) => {
     return (
         <>
             {localStorage.getItem("accessToken") ? (

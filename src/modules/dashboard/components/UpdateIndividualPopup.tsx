@@ -102,7 +102,7 @@ export default function UpdateIndividualPopup({
                     <DialogBody placeholder={""}>
                         <div className="w-full flex flex-col gap-y-10 p-4">
                             {/* First Page includes Full Name, Email, Phone Number, Password, Confirm Password */}
-                            {activeStep === 0 && (
+                            {activeStep === 0 || isFirstStep && (
                                 <div className="flex flex-col justify-center gap-4">
                                     <div className="flex gap-2">
                                         <Input
@@ -239,7 +239,7 @@ export default function UpdateIndividualPopup({
                                 </div>
                             )}
                             {/* Second Page includes Adhaar No., Date of Birth, Blood Group, Phone number*/}
-                            {activeStep === 1 && (
+                            {activeStep === 1 || isLastStep && (
                                 <div className="flex flex-col justify-center gap-4 p-4">
                                     {/* Address */}
                                     <div className="">

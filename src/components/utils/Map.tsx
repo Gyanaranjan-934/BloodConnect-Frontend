@@ -60,6 +60,7 @@ const Map = ({
         console.log(placeName);
         setAddress(placeName);
         console.log(geoLocation);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const [markerCurrentPosition, setMarkerCurrentPosition] = React.useState<{
@@ -83,8 +84,8 @@ const Map = ({
                     ""
             );
             setMarkerCurrentPosition({
-                lat: place.geometry?.location?.lat(),
-                lng: place.geometry?.location?.lng(),
+                lat: Number(place.geometry?.location?.lat()),
+                lng: Number(place.geometry?.location?.lng()),
             });
             console.log(place);
             setSelectedLocation({
@@ -105,6 +106,7 @@ const Map = ({
             <div className="flex flex-col gap-2 justify-center items-center">
                 <Autocomplete onPlaceChanged={locationSelected} className="w-full" onLoad={onLoad}>
                     <Input
+                        crossOrigin={"*"}
                         label="Search Address"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}

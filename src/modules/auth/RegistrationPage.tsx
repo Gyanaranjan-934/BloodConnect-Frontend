@@ -2,8 +2,8 @@ import React, { ReactElement, useState } from "react";
 import { Radio, Typography } from "@material-tailwind/react";
 import { OrganizationRegisterForm } from "./components/OrganizationRegisterForm";
 import DoctorRegisterForm from "./components/DoctorRegisterForm";
-import ErrorBoundary from "../../ErrorBoundary";
 import IndividualRegisterForm from "./components/IndividualRegisterForm1";
+import { ErrorBoundary } from "react-error-boundary";
 
 export const RegistrationPage = ({
     openLoginForm,
@@ -66,7 +66,7 @@ export const RegistrationPage = ({
                     </div>
                     <br />
                     {user === "individual" && (
-                        <ErrorBoundary>
+                        <ErrorBoundary fallback={<div>Something went wrong</div>}>
                             <IndividualRegisterForm 
                                 openLoginForm={openLoginForm}
                                 openRegisterForm={openRegisterForm}
@@ -75,12 +75,12 @@ export const RegistrationPage = ({
                         </ErrorBoundary>
                     )}
                     {user === "organization" && (
-                        <ErrorBoundary>
+                        <ErrorBoundary fallback={<div>Something went wrong</div>}>
                             <OrganizationRegisterForm />
                         </ErrorBoundary>
                     )}
                     {user === "doctor" && (
-                        <ErrorBoundary>
+                        <ErrorBoundary fallback={<div>Something went wrong</div>}>
                             <DoctorRegisterForm />
                         </ErrorBoundary>
                     )}

@@ -20,6 +20,7 @@ export default (storageKey:string, initialState:any) => {
     if (storageInBrowser) {
       setInternalState(true);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Create a replacement method that will set the state like normal, but that also saves the new state into the store.

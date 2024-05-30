@@ -11,9 +11,9 @@ import { AuthContext } from "../../modules/auth/AuthContext";
 import { Link } from "react-router-dom";
 import { ProfileMenu } from "./ProfileMenu";
 import NavList from "./NavList";
-import ErrorBoundary from "../../ErrorBoundary";
 import CreateAlertForm from "../../modules/alerts/components/CreateAlertForm";
 import AuthPopup from "../../modules/auth/components/AuthPopup";
+import { ErrorBoundary } from "react-error-boundary";
 
 export default function NavbarLayout() {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
@@ -108,7 +108,7 @@ export default function NavbarLayout() {
                 <CreateAlertForm onClose={setIsAlertPopupOpen} />
             )}
             {isAuthPopupOpen && (
-                <ErrorBoundary>
+                <ErrorBoundary fallback={<div>Something went wrong</div>}>
                     <AuthPopup
                         isRegisterForm={isRegisterPopupOpen}
                         isLoginForm={isLoginPopupOpen}

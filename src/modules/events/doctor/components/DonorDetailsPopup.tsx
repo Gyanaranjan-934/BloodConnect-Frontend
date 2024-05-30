@@ -36,7 +36,7 @@ export default function DonorDetailsPopup({
                     }}
                 >
                     <DialogHeader placeholder={""}>
-                        {donor.fullName}
+                        {donor.name}
                     </DialogHeader>
                     <DialogBody placeholder={""}>
                         <Typography

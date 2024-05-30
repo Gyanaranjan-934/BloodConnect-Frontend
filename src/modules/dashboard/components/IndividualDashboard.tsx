@@ -13,11 +13,11 @@ import { AuthContext } from "../../auth/AuthContext";
 import UpdateIndividualPopup from "./UpdateIndividualPopup";
 import { toast } from "react-toastify";
 import IndividualDashboardComponent from "./IndividualDashboardComponent";
-import ErrorBoundary from "../../../ErrorBoundary";
 import SearchDonors from "../../appointment/components/SearchDonors";
 import DonationHistory from "./DonationHistory";
 import AppointmentTable from "./AppointmentTable";
 import userIcon from "../../../assets/user.png";
+import { ErrorBoundary } from "react-error-boundary";
 
 const IndividualDashboard = () => {
     const [isAlertPopupOpen, setIsAlertPopupOpen] = React.useState(false);
@@ -232,7 +232,7 @@ const IndividualDashboard = () => {
                 />
             )}
             {isAppointmentPopupOpen && (
-                <ErrorBoundary>
+                <ErrorBoundary fallback={<div>Something went wrong</div>}>
                     <SearchDonors
                         onClose={setIsAppointmentPopupOpen}
                         editSuccess={editSuccess}

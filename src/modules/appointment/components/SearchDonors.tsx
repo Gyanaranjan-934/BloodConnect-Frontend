@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from "react";
 import NearbyOrganizationList from "./NearbyOrganizationList";
 import { Button, Typography } from "@material-tailwind/react";
@@ -34,6 +33,7 @@ const SearchDonors = ({
         if (editSuccess) {
             handleClose();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editSuccess]);
 
     const [nearbyOrganizations, setNearbyOrganizations] = useState<

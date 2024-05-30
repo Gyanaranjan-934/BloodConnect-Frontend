@@ -18,8 +18,7 @@ const queryClient = new QueryClient({
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", async () => {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const registration = await navigator.serviceWorker.register(
+            await navigator.serviceWorker.register(
                 "/firebase-messaging-sw.js"
             );
             // console.log("Service worker registered:", registration);

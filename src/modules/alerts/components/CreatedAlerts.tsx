@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import { Card, List } from "@material-tailwind/react";
 import AlertDetails from "./AlertDetails";
@@ -24,6 +23,7 @@ const CreatedAlerts = () => {
                 setEditSuccess(false);
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editSuccess, data]);
     if (isLoading) {
         return <ProgressBar/>;

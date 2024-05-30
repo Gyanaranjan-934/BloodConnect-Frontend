@@ -1,5 +1,5 @@
 import React from "react";
-import { EventType } from "../utils";
+import { EventType } from "../../utils";
 import { List } from "@material-tailwind/react";
 import EventListItem from "./EventListItem";
 

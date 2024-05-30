@@ -23,6 +23,7 @@ const ReceivedAlerts = () => {
                 setEditSuccess(false);
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editSuccess, data]);
 
     if (isLoading) {

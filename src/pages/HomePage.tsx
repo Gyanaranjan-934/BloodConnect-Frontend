@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import donationIcon1 from "../assets/donationIcon1.jpg";
 import donationIcon2 from "../assets/donation1.png";

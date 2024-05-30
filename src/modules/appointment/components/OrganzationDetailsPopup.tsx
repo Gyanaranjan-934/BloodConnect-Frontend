@@ -62,6 +62,7 @@ export default function OrganzationDetailsPopup({
             );
             setDistance(distance);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [organization]);
 
     const handleAppointmentRegistration = async () => {

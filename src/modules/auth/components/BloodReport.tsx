@@ -37,6 +37,7 @@ function BloodReport({
         if (!data) {
             refetch();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     const bloodReportData =
