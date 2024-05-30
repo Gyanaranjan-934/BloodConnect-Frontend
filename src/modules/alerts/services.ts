@@ -76,6 +76,7 @@ export const createAlert = async (
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     userType: loggedInUserType,
+                    "Content-Type": "multipart/form-data",
                 },
             }
         );

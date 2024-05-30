@@ -1,6 +1,6 @@
 import createEndPoint, { axiosInstance } from "../../services/createEndPoint";
 import { getConfig } from "../alerts/services";
-import { BloodReportDetailsType} from "../auth/types";
+import { BloodReportDetailsType } from "../auth/types";
 import {
     IndividualDashboardType,
     OrganizationDashboardType,
@@ -15,7 +15,6 @@ export const getUserDashboard = async (
     | DoctorDashboardType
     | null
 > => {
-
     const config = await getConfig();
 
     try {
@@ -28,7 +27,7 @@ export const getUserDashboard = async (
             }
         );
 
-        if(!dashboardDetails.data.success){
+        if (!dashboardDetails.data.success) {
             localStorage.clear();
             window.location.href = "/";
         }
@@ -48,9 +47,11 @@ export const getUserDashboard = async (
 
 export const uploadIndividualAvatar = async (
     userAvatar: File | undefined,
-    accessToken?: string|null
+    accessToken?: string | null
 ): Promise<boolean> => {
     try {
+        console.log(userAvatar);
+
         const config = await getConfig();
         if (!userAvatar || !accessToken) {
             return false;
@@ -61,10 +62,13 @@ export const uploadIndividualAvatar = async (
             createEndPoint.uploadIndividualAvatar(),
             formData,
             {
-                headers: config.headers,
+                headers: {
+                    ...config.headers,
+                    "Content-Type": "multipart/form-data",
+                },
             }
         );
-        if(response.data.success){
+        if (response.data.success) {
             return true;
         }
         return false;
@@ -74,7 +78,7 @@ export const uploadIndividualAvatar = async (
     }
 };
 
-export const getBloodReports = async() : Promise<BloodReportDetailsType[]> => {
+export const getBloodReports = async (): Promise<BloodReportDetailsType[]> => {
     try {
         const config = await getConfig();
         const reports = await axiosInstance.get(
