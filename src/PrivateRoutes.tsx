@@ -5,7 +5,6 @@ import Events, { EventRoutes } from "./modules/events/index";
 import AlertPage from "./modules/alerts/AlertPage";
 import { AdminRoutes } from "./modules/admin/AdminPage";
 import AppointmentPage from "./modules/appointment";
-import { ErrorBoundary } from "react-error-boundary";
 const PrivatePage = (
     <Route path="">
         <Route path="dashboard">
@@ -13,51 +12,15 @@ const PrivatePage = (
             {AdminRoutes}
         </Route>
         <Route path="alerts/*">
-            <Route
-                index
-                element={
-                    <ProtectedRoute
-                        component={
-                            <ErrorBoundary
-                                fallback={<div>Something went wrong</div>}
-                            >
-                                <AlertPage />
-                            </ErrorBoundary>
-                        }
-                    />
-                }
-            />
+            <Route index element={<ProtectedRoute component={AlertPage} />} />
         </Route>
         <Route path="events/*">
-            <Route
-                index
-                element={
-                    <ProtectedRoute
-                        component={
-                            <ErrorBoundary
-                                fallback={<div>Something went wrong</div>}
-                            >
-                                <Events />
-                            </ErrorBoundary>
-                        }
-                    />
-                }
-            />
+            <Route index element={<ProtectedRoute component={Events} />} />
             {EventRoutes}
         </Route>
         <Route
             path="appointments"
-            element={
-                <ProtectedRoute
-                    component={
-                        <ErrorBoundary
-                            fallback={<div>Something went wrong</div>}
-                        >
-                            <AppointmentPage />
-                        </ErrorBoundary>
-                    }
-                />
-            }
+            element={<ProtectedRoute component={AppointmentPage} />}
         />
     </Route>
 );
